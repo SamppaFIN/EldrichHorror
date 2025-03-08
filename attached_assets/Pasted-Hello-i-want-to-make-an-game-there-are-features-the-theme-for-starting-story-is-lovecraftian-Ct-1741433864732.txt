@@ -1,0 +1,37 @@
+Hello, i want to make an game there are features:
+
+the theme for starting story is lovecraftian Cthulhu adventure
+
+the point of game is to travel to correct geolocation (get this data from your device).. If the storypoint location is less thatn 10 meters, start a scene 
+for each stage there is also a secret location that thiggers story and sets the flag if the stage secret is found
+
+every storypoint forces player to select an action that leads to decreace either health ot sanity depending on the action..
+make game over screen and buttons to start over and highscore lists available
+
+make a difficulty setting that scales the health and sanity meter values and how much there is lef
+
+if user goes close enought on the cutscene trigger that scene
+
+mark scenes and secrets seen when visited, so the trigger doesnt happen twise.. make a debug option to set the statusses if the secret is seen or the storypoint visited
+
+there is a map of real world (like google maps) that shows player position in game screen
+the map shows the next location of the quest
+there is 5 stages of game, start, stage 1 , stage 2, stage 3 and final stage
+there is also a came welcome screen, game over screen and a screen for debugging and start any scenes immetedially
+
+in every stage there is a story (text, narrated) and media, picture, gif, video and sound effects, music and that narrator speaking
+there are 3 different map points, story point, secret poind and cutscene
+the main resolution of game should be 1980*1080, but is should also scale down
+if the player walks to the destination point of story the program lauches that story stages action screen
+action screen has some scoise to be made and it results
+
+so in example, user walks to location with his phone, he is inside 10 meters of story start point, that triggers the beginning of quest..
+in interface there should be map with markers visiple, hint texts, information about the story secret quest items the player has found (in example story there is ancient wisdon, trinket and a weapon) it shows only the secrets found
+
+the map interface shows radius of story point where it is (20m) and secret where it is (10m)
+
+in you, there is a visual healht and sanity meters that change color depending how low the value is.. make random chaotic events appear if sanity is low, make random events appear more often if the health is low
+
+create an initial project and implementation plan, propose initial project structure and steps to make the game base robust.. i'll then add designs and media from the storypoint..
+
+so first a playn, i'll revise it.. make the order initial setup, UI design, story designd and further inprovements
