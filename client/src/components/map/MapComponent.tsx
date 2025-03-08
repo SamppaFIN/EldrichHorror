@@ -12,7 +12,12 @@ type MapComponentProps = {
 };
 
 const MapComponent = ({ onTriggerLocation }: MapComponentProps) => {
-  const { gameState, playerPosition, gameLocations } = useGameContext();
+  const { 
+    gameState, 
+    playerPosition, 
+    gameLocations,
+    showStageLocations 
+  } = useGameContext();
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const playerMarkerRef = useRef<any>(null);
@@ -188,8 +193,17 @@ const MapComponent = ({ onTriggerLocation }: MapComponentProps) => {
     
     // Add new markers for each location
     gameLocations.forEach(location => {
+      // Skip already visited locations except cutscenes
       if (gameState.visitedLocations.includes(location.id) && location.type !== 'cutscene') {
-        return; // Skip already visited locations except cutscenes
+        return;
+      }
+      
+      // Filter locations based on game stage and showStageLocations flag
+      // For start locations, always show them
+      // For other stages, only show if they match current stage and showStageLocations is true
+      if (location.stage !== 'start' && 
+          (location.stage !== gameState.stage || !showStageLocations)) {
+        return;
       }
       
       // Create marker with appropriate icon
@@ -275,12 +289,12 @@ const MapComponent = ({ onTriggerLocation }: MapComponentProps) => {
     });
   };
   
-  // Update map when game locations change
+  // Update map when game locations change or showStageLocations changes
   useEffect(() => {
     if (mapInstanceRef.current) {
       addLocationMarkers();
     }
-  }, [gameLocations, gameState.visitedLocations, gameState.discoveredSecrets]);
+  }, [gameLocations, gameState.visitedLocations, gameState.discoveredSecrets, showStageLocations, gameState.stage]);
   
   // Update distance and direction when player position changes
   useEffect(() => {

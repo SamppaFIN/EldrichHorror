@@ -23,7 +23,13 @@ const GameScreen = () => {
     showDebugScreen,
     closeDebugScreen,
     setHealth,
-    setSanity
+    setSanity,
+    // Story dialog
+    isStoryDialogOpen,
+    storyDialogTitle,
+    storyDialogText,
+    closeStoryDialog,
+    showStageLocations
   } = useGameContext();
 
   // Game Effects - Low sanity visualization
@@ -47,6 +53,14 @@ const GameScreen = () => {
     <div className="screen bg-[#333333] h-screen overflow-hidden">
       <GameOverlays />
       <SanityEffect sanity={sanityMeterValue} />
+      
+      {/* Story Dialog */}
+      <StoryDialog
+        title={storyDialogTitle}
+        text={storyDialogText}
+        isOpen={isStoryDialogOpen}
+        onClose={closeStoryDialog}
+      />
       
       {/* Debug Button */}
       <div className="absolute top-4 right-4 z-10">
