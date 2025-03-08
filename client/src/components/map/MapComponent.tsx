@@ -28,8 +28,8 @@ const MapComponent = ({ onTriggerLocation }: MapComponentProps) => {
       }
       
       if (mapRef.current && !mapInstanceRef.current) {
-        // Default to NYC coordinates if player position not available yet
-        const initialPosition = playerPosition || { lat: 40.7128, lng: -74.0060 };
+        // Default to Tampere, Finland coordinates if player position not available yet
+        const initialPosition = playerPosition || { lat: 61.47285420785464, lng: 23.72609861270144 };
         
         // Create map
         mapInstanceRef.current = L.map(mapRef.current).setView(

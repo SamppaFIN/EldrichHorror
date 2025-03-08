@@ -5,119 +5,119 @@ import {
   highscores, type Highscore, type InsertHighscore
 } from "@shared/schema";
 
-// Default game locations
+// Default game locations in Tampere, Finland
 const DEFAULT_LOCATIONS: InsertLocation[] = [
   {
-    id: "harbor_master",
-    name: "Harbor Master's Office",
+    id: "pyynikki_tower",
+    name: "Pyynikki Observation Tower",
     type: "story",
-    latitude: "40.7138",
-    longitude: "-74.0070",
-    radius: 20,
+    latitude: "61.4954",
+    longitude: "23.7271",
+    radius: 50,
     stage: "start",
-    narrative: "The harbor master's office is in disarray. Salt-crusted logbooks and strange symbols drawn on nautical charts hint at unusual activity offshore. A journal mentions 'deep ones' sighted near the lighthouse."
+    narrative: "At the top of the historic Pyynikki Observation Tower, you find a weathered journal hidden behind a loose panel. It contains bizarre sketches of the nearby lake Näsijärvi and references to 'ancient dwellers beneath the dark waters' and strange sounds from Tammerkoski rapids."
   },
   {
     id: "hidden_tome",
-    name: "Ancient Wisdom",
+    name: "Ancient Finnish Text",
     type: "secret",
-    latitude: "40.7118",
-    longitude: "-74.0050",
-    radius: 10,
+    latitude: "61.4965",
+    longitude: "23.7295",
+    radius: 30,
     stage: "start",
     itemId: "wisdom",
-    narrative: "Hidden beneath floorboards, you discover an ancient leather-bound tome. Its pages contain forbidden knowledge about aquatic deities and their half-human servants."
+    narrative: "In a forgotten maintenance room of the observation tower, you discover a leather-bound tome written in archaic Finnish. The pages contain folk legends about water spirits and forest deities that predate Christianity in the region."
   },
   {
-    id: "esoteric_temple",
-    name: "Esoteric Order Temple",
+    id: "tampere_cathedral",
+    name: "Tampere Cathedral",
     type: "story",
-    latitude: "40.7158",
-    longitude: "-74.0080",
-    radius: 20,
+    latitude: "61.5016",
+    longitude: "23.7605",
+    radius: 40,
     stage: "1",
-    narrative: "The abandoned temple is adorned with bizarre fish-like iconography. Hidden chambers reveal ceremonial robes and altars stained with what appears to be blood mixed with seawater."
+    narrative: "The normally serene Tampere Cathedral feels different today. You notice strange symbols etched into the woodwork, hidden among Hugo Simberg's famous frescoes. The 'Garden of Death' painting seems to move slightly when no one is looking directly at it."
   },
   {
-    id: "ritual_dagger",
-    name: "Ceremonial Weapon",
+    id: "strange_relic",
+    name: "Carved Stone Relic",
     type: "secret",
-    latitude: "40.7162",
-    longitude: "-74.0085",
-    radius: 10,
+    latitude: "61.5018",
+    longitude: "23.7610",
+    radius: 25,
     stage: "1",
-    itemId: "weapon",
-    narrative: "Behind a loose stone in the altar, you find an ornate dagger with a handle carved from bone to resemble tentacles. Its blade gleams with an unnatural iridescence."
+    itemId: "relic",
+    narrative: "Hidden in a dark corner of the cathedral basement, you find a small stone carving that doesn't match the Christian imagery. It depicts a tentacled entity rising from lake waters. The stone feels unnaturally cold to the touch."
   },
   {
-    id: "lighthouse",
-    name: "Abandoned Lighthouse",
+    id: "finlayson_area",
+    name: "Finlayson Factory Complex",
     type: "story",
-    latitude: "40.7180",
-    longitude: "-74.0060",
-    radius: 20,
+    latitude: "61.5009",
+    longitude: "23.7450",
+    radius: 45,
     stage: "2",
-    narrative: "The lighthouse keeper's quarters contain star charts marking strange celestial alignments. A trapdoor leads down to sea caves where the sound of chanting echoes from below."
+    narrative: "The historic factory buildings by Tammerkoski rapids hide a network of tunnels beneath. Old factory workers' journals speak of strange sounds from below the water and mysterious disappearances during the industrial revolution."
   },
   {
-    id: "strange_amulet",
-    name: "Elder Sign Trinket",
+    id: "ancient_key",
+    name: "Factory Master's Key",
     type: "secret",
-    latitude: "40.7185",
-    longitude: "-74.0065",
-    radius: 10,
+    latitude: "61.5014",
+    longitude: "23.7460",
+    radius: 30,
     stage: "2",
-    itemId: "trinket",
-    narrative: "In a locked drawer, you find a five-pointed star amulet made of an unknown green stone. It feels oddly warm to the touch and seems to repel the shadows around it."
+    itemId: "key",
+    narrative: "In a rusted old locker, you find an ornate brass key with tentacle-like protrusions. Inscribed with symbols similar to those you've seen before, it feels heavy with dread significance."
   },
   {
-    id: "sea_caves",
-    name: "Submerged Caves",
+    id: "underground_tunnels",
+    name: "Tammerkoski Tunnels",
     type: "story",
-    latitude: "40.7195",
-    longitude: "-74.0050",
-    radius: 20,
+    latitude: "61.4980",
+    longitude: "23.7590",
+    radius: 40,
     stage: "3",
-    narrative: "The sea caves are illuminated by bioluminescent algae revealing ancient carvings depicting fish-human hybrids. Water slowly rises as you hear chanting growing louder from the central chamber."
+    narrative: "The underground tunnels near Tammerkoski are illuminated by strange bioluminescent growths. Ancient stone carvings depict human-like figures transforming into aquatic creatures. The rushing water seems to carry whispers in an unknown language."
   },
   {
     id: "ritual_chamber",
-    name: "Ritual Chamber",
+    name: "Subterranean Chamber",
     type: "story",
-    latitude: "40.7210",
-    longitude: "-74.0040",
-    radius: 20,
+    latitude: "61.4953",
+    longitude: "23.7610",
+    radius: 40,
     stage: "final",
-    narrative: "Robed cultists surround an ancient altar where a grotesque ceremony is underway. Beyond them, the cave opens to the sea where massive shapes move beneath the dark waters."
+    narrative: "A vast chamber opens beneath the city, predating human settlement. Robed figures perform an ancient ritual around a pool that seems to drop endlessly into darkness. The walls are carved with scenes of cosmic entities and human supplication."
   },
   {
-    id: "deep_one_encounter",
-    name: "Deep One Encounter",
+    id: "entity_vision",
+    name: "Näsijärvi Vision",
     type: "cutscene",
-    latitude: "40.7205",
-    longitude: "-74.0045",
-    radius: 15,
+    latitude: "61.5030",
+    longitude: "23.7520",
+    radius: 35,
     stage: "3",
     cutsceneData: {
-      id: "deep_one_reveal",
-      title: "The Revelation",
-      text: "As you peer deeper into the cave, the shadows part to reveal a humanoid figure with bulging eyes and glistening scaled skin. It regards you with ancient malice before slipping back into the darkness.",
-      additionalText: "You know with certainty that whatever these creatures are, they are not entirely of this world."
+      id: "lake_vision",
+      title: "Visions from the Finnish Deep",
+      text: "Standing by the shore of Näsijärvi, the lake water becomes unnaturally still. Your reflection distorts, replaced by visions of an ancient time when strange beings rose from the waters to interact with early Finnish settlers.",
+      additionalText: "The visions show rituals performed on these shores for centuries, and how the entities beneath the lake influenced Finnish mythology. You realize with horror that the tales of 'Näkki' water spirits were based on real encounters."
     }
   },
   {
-    id: "cthulhu_rising",
-    name: "The Ancient One Stirs",
+    id: "final_revelation",
+    name: "The Awakening",
     type: "cutscene",
-    latitude: "40.7215",
-    longitude: "-74.0035",
-    radius: 15,
+    latitude: "61.4940",
+    longitude: "23.7615",
+    radius: 35,
     stage: "final",
     cutsceneData: {
-      id: "cthulhu_awakens",
-      title: "That Which Sleeps",
-      text: "The water churns violently as something of impossible size begins to rise from the depths. For a brief, sanity-shattering moment, you glimpse a mass of tentacles, eyes, and geometries that defy comprehension.",
-      additionalText: "The very fabric of reality seems to warp around this cosmic entity. You know instinctively that to witness its full form would destroy your mind completely."
+      id: "cosmic_horror",
+      title: "Horror from Cosmic Depths",
+      text: "The ritual reaches its peak as the pool's water parts to reveal something ancient rising from below. Your mind struggles to comprehend the vast, alien form - a mass of scales, eyes, and appendages that should not exist in our reality.",
+      additionalText: "As your sanity threatens to break, you understand that Finnish folklore wasn't metaphorical. The entities venerated as nature deities by ancient Finns were glimpses of cosmic beings that existed long before humans and will remain long after our civilization ends."
     }
   }
 ];
