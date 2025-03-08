@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertHighscoreSchema } from "@shared/schema";
+import { insertHighscoreSchema, insertBlogPostSchema } from "@shared/schema";
 import { ValidationError } from "zod-validation-error";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -84,6 +84,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error saving highscore:", error);
       res.status(500).json({ message: "Failed to save highscore" });
+    }
+  });
+  
+  // Blog Posts API
+  app.get("/api/blog-posts", async (req, res) => {
+    try {
+      const blogPosts = await storage.getBlogPosts();
+      res.json(blogPosts);
+    } catch (error) {
+      console.error("Error fetching blog posts:", error);
+      res.status(500).json({ message: "Failed to fetch blog posts" });
+    }
+  });
+  
+  app.get("/api/blog-posts/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id, 10);
+      const blogPost = await storage.getBlogPostById(id);
+      
+      if (!blogPost) {
+        return res.status(404).json({ message: "Blog post not found" });
+      }
+      
+      res.json(blogPost);
+    } catch (error) {
+      console.error("Error fetching blog post:", error);
+      res.status(500).json({ message: "Failed to fetch blog post" });
+    }
+  });
+  
+  app.post("/api/blog-posts", async (req, res) => {
+    try {
+      // Validate request body
+      const validationResult = insertBlogPostSchema.safeParse(req.body);
+      
+      if (!validationResult.success) {
+        const validationError = new ValidationError(validationResult.error);
+        return res.status(400).json({ message: validationError.message });
+      }
+      
+      const blogPost = await storage.createBlogPost(req.body);
+      res.status(201).json(blogPost);
+    } catch (error) {
+      console.error("Error creating blog post:", error);
+      res.status(500).json({ message: "Failed to create blog post" });
     }
   });
 
