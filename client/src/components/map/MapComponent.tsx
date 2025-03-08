@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useGameContext } from '@/context/GameContext';
+import { useGeolocation } from '@/hooks/useGeolocation';
 import { calculateDistance } from '@/lib/locationUtils';
 import { LocationType } from '@/types/gameTypes';
 import 'leaflet/dist/leaflet.css';
@@ -13,6 +14,7 @@ type MapComponentProps = {
 
 const MapComponent = ({ onTriggerLocation }: MapComponentProps) => {
   const { gameState, playerPosition, gameLocations, locationPermissionState, requestLocationPermission } = useGameContext();
+  const { accuracy } = useGeolocation();
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const playerMarkerRef = useRef<any>(null);
@@ -103,9 +105,41 @@ const MapComponent = ({ onTriggerLocation }: MapComponentProps) => {
       // Update player marker position with smooth animation
       playerMarkerRef.current.setLatLng([playerPosition.lat, playerPosition.lng]);
       
-      // Update accuracy circle
+      // Update accuracy circle with real accuracy data when available
       if (accuracyCircleRef.current) {
+        // Update circle position
         accuracyCircleRef.current.setLatLng([playerPosition.lat, playerPosition.lng]);
+        
+        // Update circle radius based on actual accuracy data (or use default)
+        const currentAccuracy = accuracy || 15; // Default to 15m if accuracy is null
+        accuracyCircleRef.current.setRadius(currentAccuracy);
+        
+        // Update circle styling based on accuracy
+        if (accuracy) {
+          // Better accuracy = more green
+          if (accuracy < 20) {
+            accuracyCircleRef.current.setStyle({
+              fillColor: '#4CAF50', // Green for good accuracy
+              color: '#4CAF50',
+              fillOpacity: 0.15,
+              weight: 2
+            });
+          } else if (accuracy < 50) {
+            accuracyCircleRef.current.setStyle({
+              fillColor: '#FFC107', // Yellow for medium accuracy
+              color: '#FFC107',
+              fillOpacity: 0.15,
+              weight: 2
+            });
+          } else {
+            accuracyCircleRef.current.setStyle({
+              fillColor: '#F44336', // Red for poor accuracy
+              color: '#F44336',
+              fillOpacity: 0.15,
+              weight: 2
+            });
+          }
+        }
       }
       
       // Always center map on player with smooth animation
@@ -128,9 +162,9 @@ const MapComponent = ({ onTriggerLocation }: MapComponentProps) => {
       checkProximityTriggers();
       
       // Log position update in console
-      console.log(`Position updated at ${new Date().toLocaleTimeString()}, Δt: ${Math.round(timeSinceLastUpdate)}ms`);
+      console.log(`Position updated at ${new Date().toLocaleTimeString()}, accuracy: ${accuracy}m, Δt: ${Math.round(timeSinceLastUpdate)}ms`);
     }
-  }, [playerPosition]);
+  }, [playerPosition, accuracy]);
   
   // Calculate direction between player and target
   const calculateDirection = (playerLat: number, playerLng: number, targetLat: number, targetLng: number): string => {
@@ -395,7 +429,10 @@ const MapComponent = ({ onTriggerLocation }: MapComponentProps) => {
     if (!playerPosition && locationPermissionState !== 'granted') {
       return "GPS: Unavailable";
     } else if (playerPosition) {
-      return `GPS: ${lastUpdateTime}`;
+      // Add accuracy information when available
+      return accuracy 
+        ? `GPS: ${lastUpdateTime} (±${Math.round(accuracy)}m)` 
+        : `GPS: ${lastUpdateTime}`;
     } else {
       return "GPS: Waiting...";
     }
