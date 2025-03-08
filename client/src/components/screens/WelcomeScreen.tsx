@@ -27,16 +27,55 @@ const WelcomeScreen = () => {
       {/* Location Permission Button */}
       {locationPermissionState !== 'granted' && (
         <div className="mb-8 flex flex-col items-center">
-          <button 
-            onClick={requestLocationPermission}
-            className="bg-[#2c5a5a] text-[#e8e0c9] py-2 px-4 rounded-md flex items-center space-x-2 border border-[#e8e0c9]/30 hover:bg-[#1a3a3a] transition-colors"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            Grant Location Access
-          </button>
+          <div className="flex flex-col sm:flex-row gap-3 mb-2">
+            <button 
+              onClick={requestLocationPermission}
+              className="bg-[#2c5a5a] text-[#e8e0c9] py-2 px-4 rounded-md flex items-center justify-center space-x-2 border border-[#e8e0c9]/30 hover:bg-[#1a3a3a] transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              Grant Location Access
+            </button>
+            
+            {/* Device Settings Button */}
+            <button 
+              onClick={() => {
+                // Check device type and open appropriate settings
+                const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                
+                if (isMobile) {
+                  // For iOS, Android devices
+                  if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+                    // iOS devices - open Settings app
+                    alert('Please open your device Settings app → Privacy → Location Services and enable for this app');
+                  } else {
+                    // Android devices - try to open location settings
+                    window.open('https://support.google.com/android/answer/3467281', '_blank');
+                  }
+                } else {
+                  // For desktop browsers
+                  if (navigator.userAgent.indexOf('Chrome') !== -1) {
+                    window.open('chrome://settings/content/location', '_blank');
+                  } else if (navigator.userAgent.indexOf('Firefox') !== -1) {
+                    window.open('about:preferences#privacy', '_blank');
+                  } else if (navigator.userAgent.indexOf('Safari') !== -1) {
+                    alert('Please open Safari Preferences → Websites → Location and allow for this website');
+                  } else {
+                    alert('Please check your browser settings to enable location permissions for this website');
+                  }
+                }
+              }}
+              className="bg-[#1a3a3a] text-[#e8e0c9] py-2 px-4 rounded-md flex items-center justify-center space-x-2 border border-[#e8e0c9]/30 hover:bg-[#264d4d] transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              Open Device Settings
+            </button>
+          </div>
           <p className="text-sm mt-2 text-[#e8e0c9]/70">This game uses your location to enhance gameplay</p>
         </div>
       )}
