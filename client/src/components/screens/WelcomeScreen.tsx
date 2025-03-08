@@ -5,7 +5,7 @@ import { PixelButton } from '@/components/GameComponents';
 import { Difficulty } from '@/types/gameTypes';
 
 const WelcomeScreen = () => {
-  const { startGame, setDifficulty, showDebugScreen } = useGameContext();
+  const { startGame, setDifficulty, showDebugScreen, requestLocationPermission, locationPermissionState } = useGameContext();
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>('medium');
 
   const handleDifficultySelect = (difficulty: Difficulty) => {

@@ -22,7 +22,9 @@ const GameScreen = () => {
     showDebugScreen,
     closeDebugScreen,
     setHealth,
-    setSanity
+    setSanity,
+    requestLocationPermission,
+    locationPermissionState
   } = useGameContext();
 
   // Game Effects - Low sanity visualization
@@ -46,6 +48,22 @@ const GameScreen = () => {
     <div className="screen bg-[#333333] h-screen overflow-hidden">
       <GameOverlays />
       <SanityEffect sanity={sanityMeterValue} />
+      
+      {/* Location Permission Button - only show if permission isn't granted */}
+      {locationPermissionState !== 'granted' && (
+        <div className="absolute top-4 left-4 z-20">
+          <button 
+            onClick={requestLocationPermission}
+            className="bg-[#1565c0] text-[#e8e0c9] text-sm py-1.5 px-3 rounded-md flex items-center space-x-1 shadow-md border border-[#e8e0c9]/30 animate-pulse"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            Enable GPS Location
+          </button>
+        </div>
+      )}
       
       {/* Debug Button */}
       <div className="absolute top-4 right-4 z-10">

@@ -1,24 +1,66 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { GeoPosition } from '@/types/gameTypes';
+import { useToast } from '@/hooks/use-toast';
 
 type GeolocationHookReturn = {
   position: GeoPosition | null;
   error: string | null;
   isLoading: boolean;
+  requestPermission: () => void;
+  permissionState: PermissionState | null;
 };
 
 export const useGeolocation = (): GeolocationHookReturn => {
   const [position, setPosition] = useState<GeoPosition | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [permissionState, setPermissionState] = useState<PermissionState | null>(null);
+  const [permissionRequested, setPermissionRequested] = useState<boolean>(false);
+  
   const lastUpdateRef = useRef<number>(Date.now());
   const positionRef = useRef<GeoPosition | null>(null);
+  const toastShownRef = useRef<boolean>(false);
+  const permissionToastRef = useRef<boolean>(false);
+  const watchIdRef = useRef<number | null>(null);
+  
+  const { toast } = useToast();
 
-  // Function to get the current position
-  const getCurrentPosition = () => {
+  // Check permissions status
+  const checkPermissions = useCallback(async () => {
+    if (!navigator.permissions) {
+      return null;
+    }
+    
+    try {
+      const permissionStatus = await navigator.permissions.query({ name: 'geolocation' as PermissionName });
+      setPermissionState(permissionStatus.state);
+      
+      // Listen for permission changes
+      permissionStatus.addEventListener('change', () => {
+        setPermissionState(permissionStatus.state);
+        
+        if (permissionStatus.state === 'granted' && !watchIdRef.current) {
+          startWatchingPosition();
+        }
+      });
+      
+      return permissionStatus.state;
+    } catch (e) {
+      console.error('Error checking permissions:', e);
+      return null;
+    }
+  }, []);
+
+  // Function to start watching position
+  const startWatchingPosition = useCallback(() => {
     // Skip if geolocation is not supported
     if (!navigator.geolocation) {
       return;
+    }
+    
+    // Clear any existing watch
+    if (watchIdRef.current !== null) {
+      navigator.geolocation.clearWatch(watchIdRef.current);
     }
 
     // Success handler
@@ -38,6 +80,17 @@ export const useGeolocation = (): GeolocationHookReturn => {
       
       // Update timestamp
       lastUpdateRef.current = Date.now();
+      
+      // Show toast only once when position is successfully obtained
+      if (!toastShownRef.current) {
+        toast({
+          title: "GPS Location Activated",
+          description: "Using your real-world location for gameplay",
+          duration: 3000
+        });
+        toastShownRef.current = true;
+      }
+      
       console.log(`Position updated at ${new Date().toLocaleTimeString()}: ${newPosition.lat}, ${newPosition.lng}`);
     };
 
@@ -55,32 +108,82 @@ export const useGeolocation = (): GeolocationHookReturn => {
       }
       
       // Report the error
-      const errorMessage = error.code === 1
-        ? 'Permission denied. Using default position in Tampere, Finland.'
-        : error.code === 2
-        ? 'Position unavailable. Using default position in Tampere, Finland.'
-        : error.code === 3
-        ? 'Timeout. Using default position in Tampere, Finland.'
-        : 'An unknown error occurred. Using default position in Tampere, Finland.';
+      let errorMessage = '';
+      
+      if (error.code === 1) { // Permission denied
+        errorMessage = 'Location permission denied. Using default position in Tampere, Finland.';
+        if (!permissionToastRef.current) {
+          toast({
+            title: "Location Permission Required",
+            description: "Please enable location permissions for the full game experience.",
+            variant: "destructive",
+            duration: 5000
+          });
+          permissionToastRef.current = true;
+        }
+      } else if (error.code === 2) {
+        errorMessage = 'Position unavailable. Using default position in Tampere, Finland.';
+      } else if (error.code === 3) {
+        errorMessage = 'Location request timed out. Using default position in Tampere, Finland.';
+      } else {
+        errorMessage = 'An unknown location error occurred. Using default position in Tampere, Finland.';
+      }
       
       setError(errorMessage);
       setIsLoading(false);
       console.warn('Geolocation error:', errorMessage);
     };
 
-    // Get current position with options
+    // Watch options with high accuracy
     const options = {
       enableHighAccuracy: true,
       timeout: 5000,
       maximumAge: 0
     };
 
-    navigator.geolocation.getCurrentPosition(
+    // Start watching position with 3-second updates
+    watchIdRef.current = navigator.geolocation.watchPosition(
       handleSuccess,
       handleError,
       options
     );
-  };
+  }, [toast]);
+
+  // Function to request permission explicitly - can be called from UI
+  const requestPermission = useCallback(() => {
+    setPermissionRequested(true);
+    
+    // If permissions API is available, check status
+    if (navigator.permissions) {
+      checkPermissions().then((state) => {
+        if (state === 'granted') {
+          startWatchingPosition();
+        } else {
+          // If not granted, try to get a position which will trigger the permission prompt
+          navigator.geolocation.getCurrentPosition(
+            () => startWatchingPosition(),
+            (error) => {
+              console.warn('Permission request failed:', error);
+              toast({
+                title: "Location Access Required",
+                description: "Please allow location access in your browser settings to play this game with real-world tracking.",
+                variant: "destructive",
+                duration: 5000
+              });
+            }
+          );
+        }
+      });
+    } else {
+      // If permissions API not available, just try to get position
+      navigator.geolocation.getCurrentPosition(
+        () => startWatchingPosition(),
+        (error) => {
+          console.warn('Permission request failed:', error);
+        }
+      );
+    }
+  }, [checkPermissions, startWatchingPosition, toast]);
 
   useEffect(() => {
     // Check for debug location first (for debugging)
@@ -111,19 +214,39 @@ export const useGeolocation = (): GeolocationHookReturn => {
       return;
     }
 
-    // Get initial position
-    getCurrentPosition();
-
-    // Set up 3-second interval for updating position
-    const positionInterval = setInterval(() => {
-      getCurrentPosition();
-    }, 3000); // 3 seconds refresh interval
+    // Check permissions first
+    checkPermissions().then((state) => {
+      if (state === 'granted') {
+        // If permission is already granted, start watching
+        startWatchingPosition();
+      } else if (state === 'prompt') {
+        // Show a prompt to the user suggesting they enable location
+        toast({
+          title: "Location Access Needed",
+          description: "This game uses your real-world location. Allow access when prompted for the best experience.",
+          duration: 5000
+        });
+        
+        // We'll wait for the user to click a button to request permission
+        if (permissionRequested) {
+          requestPermission();
+        }
+      }
+    });
 
     // Cleanup
     return () => {
-      clearInterval(positionInterval);
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+      }
     };
-  }, []);
+  }, [checkPermissions, startWatchingPosition, permissionRequested, requestPermission, toast]);
 
-  return { position, error, isLoading };
+  return { 
+    position, 
+    error, 
+    isLoading, 
+    requestPermission,
+    permissionState
+  };
 };

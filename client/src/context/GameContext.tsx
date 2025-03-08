@@ -185,6 +185,7 @@ type GameContextType = {
   isChoicesShown: boolean;
   showHint: boolean;
   currentCutscene: Cutscene | null;
+  locationPermissionState: PermissionState | null;
   
   startGame: () => void;
   restartGame: () => void;
@@ -202,6 +203,7 @@ type GameContextType = {
   showDebugScreen: () => void;
   closeDebugScreen: (returnScreen?: Screen) => void;
   showHighscores: () => void;
+  requestLocationPermission: () => void;
 };
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -221,10 +223,10 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   const { toast } = useToast();
   
   // Fetch player position using geolocation hook
-  const { position: playerPosition, error: geoError } = useGeolocation();
+  const { position: playerPosition, error: geoError, requestPermission, permissionState } = useGeolocation();
   
   // Fetch game locations from API
-  const { data: gameLocations = [] } = useQuery({
+  const { data: gameLocations = [] } = useQuery<LocationType[]>({
     queryKey: ['/api/locations'],
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
   });
@@ -523,6 +525,16 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     });
   };
   
+  // Function to request location permission
+  const requestLocationPermission = () => {
+    requestPermission();
+    toast({
+      title: "Requesting Location",
+      description: "Please allow access to your location for the best gameplay experience.",
+      duration: 3000
+    });
+  };
+
   return (
     <GameContext.Provider value={{
       gameState,
@@ -537,6 +549,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       isChoicesShown,
       showHint,
       currentCutscene,
+      locationPermissionState: permissionState,
       
       startGame,
       restartGame,
@@ -553,7 +566,8 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       completeCutscene,
       showDebugScreen,
       closeDebugScreen,
-      showHighscores
+      showHighscores,
+      requestLocationPermission
     }}>
       {children}
     </GameContext.Provider>
