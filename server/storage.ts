@@ -2,7 +2,8 @@ import {
   users, type User, type InsertUser,
   locations, type Location, type InsertLocation,
   gameProgress, type GameProgress, type InsertGameProgress,
-  highscores, type Highscore, type InsertHighscore
+  highscores, type Highscore, type InsertHighscore,
+  blogPosts, type BlogPost, type InsertBlogPost
 } from "@shared/schema";
 
 // Default game locations in Tampere, Finland
@@ -174,6 +175,11 @@ export interface IStorage {
   getHighscores(): Promise<Highscore[]>;
   getHighscoresByUser(userId: number): Promise<Highscore[]>;
   saveHighscore(highscore: InsertHighscore): Promise<Highscore>;
+  
+  // Blog post methods
+  getBlogPosts(): Promise<BlogPost[]>;
+  getBlogPostById(id: number): Promise<BlogPost | undefined>;
+  createBlogPost(blogPost: InsertBlogPost): Promise<BlogPost>;
 }
 
 export class MemStorage implements IStorage {
@@ -181,18 +187,22 @@ export class MemStorage implements IStorage {
   private locations: Map<string, Location>;
   private progresses: Map<number, GameProgress>;
   private highscores: Highscore[];
+  private blogPosts: Map<number, BlogPost>;
   private userCurrentId: number;
   private highscoreCurrentId: number;
   private progressCurrentId: number;
+  private blogPostCurrentId: number;
 
   constructor() {
     this.users = new Map();
     this.locations = new Map();
     this.progresses = new Map();
     this.highscores = [];
+    this.blogPosts = new Map();
     this.userCurrentId = 1;
     this.highscoreCurrentId = 1;
     this.progressCurrentId = 1;
+    this.blogPostCurrentId = 1;
     
     // Initialize default locations
     this.initializeDefaultData();
@@ -290,6 +300,31 @@ export class MemStorage implements IStorage {
     
     this.highscores.push(newHighscore);
     return newHighscore;
+  }
+  
+  // Blog post methods
+  async getBlogPosts(): Promise<BlogPost[]> {
+    return Array.from(this.blogPosts.values()).sort((a, b) => 
+      b.createdAt.getTime() - a.createdAt.getTime()
+    );
+  }
+  
+  async getBlogPostById(id: number): Promise<BlogPost | undefined> {
+    return this.blogPosts.get(id);
+  }
+  
+  async createBlogPost(blogPost: InsertBlogPost): Promise<BlogPost> {
+    const id = this.blogPostCurrentId++;
+    const now = new Date();
+    
+    const newBlogPost: BlogPost = {
+      ...blogPost,
+      id,
+      createdAt: now
+    };
+    
+    this.blogPosts.set(id, newBlogPost);
+    return newBlogPost;
   }
 }
 
