@@ -48,16 +48,23 @@ export const useGeolocation = (): GeolocationHookReturn => {
       setIsLoading(false);
     };
 
-    // Error handler
+    // Error handler - use default Tampere position if geolocation fails
     const handleError = (error: GeolocationPositionError) => {
+      // Set default position in Tampere, Finland
+      setPosition({
+        lat: 61.47422624340799,
+        lng: 23.727072093722093
+      });
+      
+      // Still report the error
       setError(
         error.code === 1
-          ? 'Permission denied. Please allow location access to play.'
+          ? 'Permission denied. Using default position in Tampere, Finland.'
           : error.code === 2
-          ? 'Position unavailable. Please try again later.'
+          ? 'Position unavailable. Using default position in Tampere, Finland.'
           : error.code === 3
-          ? 'Timeout. Please try again.'
-          : 'An unknown error occurred.'
+          ? 'Timeout. Using default position in Tampere, Finland.'
+          : 'An unknown error occurred. Using default position in Tampere, Finland.'
       );
       setIsLoading(false);
     };

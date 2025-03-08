@@ -8,13 +8,44 @@ import {
 // Default game locations in Tampere, Finland
 const DEFAULT_LOCATIONS: InsertLocation[] = [
   {
+    id: "ancient_map",
+    name: "Ancient Map Discovery",
+    type: "story",
+    latitude: "61.47422624340799",
+    longitude: "23.727072093722093",
+    radius: 50,
+    stage: "start",
+    narrative: "As you explore the area, a glint of something metallic catches your eye. You dig through the soil to uncover an old metal container. Inside, you find a weathered map of Tampere with strange markings. The parchment feels unnaturally cold to the touch, and the ink seems to shimmer slightly in the light. The markings appear to be in some ancient language, but as you trace your fingers over them, whispered words fill your mind. The map reveals two locations of particular interest, marked with symbols that burn themselves into your memory."
+  },
+  {
+    id: "first_stage_point",
+    name: "Mysterious Shrine",
+    type: "story",
+    latitude: "61.47582680415461",
+    longitude: "23.723975072631173", 
+    radius: 50,
+    stage: "start",
+    narrative: "The map leads you to what appears to be an ancient shrine hidden among the trees. The stone structure is covered in moss and strange symbols that match those on your map. You feel a strange buzzing sensation at the base of your skull as you approach."
+  },
+  {
+    id: "first_secret_point",
+    name: "Hidden Artifacts",
+    type: "secret",
+    latitude: "61.475960400531555",
+    longitude: "23.72449172100575",
+    radius: 30,
+    stage: "start",
+    itemId: "ancient_relic",
+    narrative: "Behind the shrine, partially buried beneath roots and soil, you discover a small stone box. Inside is an artifact of unknown origin - a small figurine carved from some black stone that seems to absorb light. It depicts a creature with too many limbs and features that don't quite make sense to the human eye."
+  },
+  {
     id: "pyynikki_tower",
     name: "Pyynikki Observation Tower",
     type: "story",
     latitude: "61.4954",
     longitude: "23.7271",
     radius: 50,
-    stage: "start",
+    stage: "1",
     narrative: "At the top of the historic Pyynikki Observation Tower, you find a weathered journal hidden behind a loose panel. It contains bizarre sketches of the nearby lake Näsijärvi and references to 'ancient dwellers beneath the dark waters' and strange sounds from Tammerkoski rapids."
   },
   {

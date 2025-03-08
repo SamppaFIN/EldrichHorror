@@ -13,10 +13,12 @@ const DebugScreen = () => {
     triggerSecret,
     resetGame,
     closeDebugScreen,
-    healthMeterValue,
-    sanityMeterValue,
     gameLocations
   } = useGameContext();
+  
+  // Use gameState values directly to ensure reactivity
+  const healthMeterValue = gameState.health;
+  const sanityMeterValue = gameState.sanity;
   
   const [simLat, setSimLat] = useState('40.7128');
   const [simLng, setSimLng] = useState('-74.0060');

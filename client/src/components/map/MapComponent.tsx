@@ -19,6 +19,11 @@ const MapComponent = ({ onTriggerLocation }: MapComponentProps) => {
   const locationMarkersRef = useRef<any[]>([]);
   const locationCirclesRef = useRef<any[]>([]);
   
+  // State for distance meter and directional hints
+  const [selectedLocation, setSelectedLocation] = useState<LocationType | null>(null);
+  const [distance, setDistance] = useState<number>(0);
+  const [direction, setDirection] = useState<string>('');
+  
   // Initialize Leaflet map when component mounts
   useEffect(() => {
     const initMap = async () => {
@@ -85,6 +90,92 @@ const MapComponent = ({ onTriggerLocation }: MapComponentProps) => {
     }
   }, [playerPosition]);
   
+  // Calculate direction between player and target
+  const calculateDirection = (playerLat: number, playerLng: number, targetLat: number, targetLng: number): string => {
+    const latDiff = targetLat - playerLat;
+    const lngDiff = targetLng - playerLng;
+    
+    // Calculate angle in degrees
+    let angle = Math.atan2(latDiff, lngDiff) * 180 / Math.PI;
+    
+    // Convert angle to compass direction
+    const directions = [
+      "east", "northeast", "north", "northwest",
+      "west", "southwest", "south", "southeast", "east"
+    ];
+    
+    // Normalize angle to 0-360
+    if (angle < 0) angle += 360;
+    
+    // Convert angle to direction index (divide by 45 degrees)
+    const index = Math.round(angle / 45) % 8;
+    
+    return directions[index];
+  };
+  
+  // Get a cryptic hint based on direction and distance
+  const getDirectionalHint = (direction: string, distance: number): string => {
+    let distanceDescription = '';
+    
+    if (distance < 100) {
+      distanceDescription = "very close";
+    } else if (distance < 300) {
+      distanceDescription = "close";
+    } else if (distance < 800) {
+      distanceDescription = "at a moderate distance";
+    } else {
+      distanceDescription = "far away";
+    }
+    
+    const hints = {
+      north: [
+        "The whispers grow stronger from the north",
+        "An unsettling pull draws you northward",
+        "The ancient symbols on your map glow faintly when pointed north"
+      ],
+      northeast: [
+        "Something beckons from the northeast",
+        "The shadows seem to point northeast",
+        "Your compass needle trembles toward the northeast"
+      ],
+      east: [
+        "The air feels heavier to the east",
+        "Strange sounds echo from the east",
+        "The eastward path feels significant"
+      ],
+      southeast: [
+        "An unnatural chill emanates from the southeast",
+        "Your vision blurs slightly when looking southeast",
+        "Whispered fragments of forgotten languages come from the southeast"
+      ],
+      south: [
+        "The air grows colder toward the south",
+        "Ancient energies pull you southward",
+        "Your shadow stretches unnaturally to the south"
+      ],
+      southwest: [
+        "The mists swirl more thickly to the southwest",
+        "A presence makes itself known from the southwest",
+        "You feel watched from the southwest"
+      ],
+      west: [
+        "Something ancient awaits to the west",
+        "The westward path seems to distort slightly",
+        "The marks on your skin tingle when facing west"
+      ],
+      northwest: [
+        "The wind carries strange scents from the northwest",
+        "Your dreams pointed to the northwest",
+        "Something calls silently from the northwest"
+      ]
+    };
+    
+    const directionHints = hints[direction as keyof typeof hints] || ["You sense something in that direction"];
+    const randomIndex = Math.floor(Math.random() * directionHints.length);
+    
+    return `${directionHints[randomIndex]} (${distanceDescription}, ${Math.round(distance)} meters)`;
+  };
+  
   // Add location markers to map
   const addLocationMarkers = () => {
     if (!mapInstanceRef.current || !L) return;
@@ -132,6 +223,27 @@ const MapComponent = ({ onTriggerLocation }: MapComponentProps) => {
       // Add popup with location information
       marker.bindPopup(`<b>${location.name}</b><br>${location.type.charAt(0).toUpperCase() + location.type.slice(1)} Point`);
       
+      // Add click handler for location selection
+      marker.on('click', () => {
+        if (playerPosition) {
+          setSelectedLocation(location);
+          const dist = calculateDistance(
+            playerPosition.lat, 
+            playerPosition.lng, 
+            location.lat, 
+            location.lng
+          );
+          setDistance(dist);
+          const dir = calculateDirection(
+            playerPosition.lat, 
+            playerPosition.lng, 
+            location.lat, 
+            location.lng
+          );
+          setDirection(dir);
+        }
+      });
+      
       // Store references
       locationMarkersRef.current.push(marker);
       locationCirclesRef.current.push(circle);
@@ -170,9 +282,71 @@ const MapComponent = ({ onTriggerLocation }: MapComponentProps) => {
     }
   }, [gameLocations, gameState.visitedLocations, gameState.discoveredSecrets]);
   
+  // Update distance and direction when player position changes
+  useEffect(() => {
+    if (playerPosition && selectedLocation) {
+      const dist = calculateDistance(
+        playerPosition.lat, 
+        playerPosition.lng, 
+        selectedLocation.lat, 
+        selectedLocation.lng
+      );
+      setDistance(dist);
+      const dir = calculateDirection(
+        playerPosition.lat, 
+        playerPosition.lng, 
+        selectedLocation.lat, 
+        selectedLocation.lng
+      );
+      setDirection(dir);
+    }
+  }, [playerPosition, selectedLocation]);
+
+  // On component mount, try to set the initial location as the ancient map location
+  useEffect(() => {
+    if (gameLocations && gameLocations.length > 0 && playerPosition) {
+      const startLocation = gameLocations.find(loc => loc.id === 'ancient_map');
+      if (startLocation) {
+        setSelectedLocation(startLocation);
+        const dist = calculateDistance(
+          playerPosition.lat, 
+          playerPosition.lng, 
+          startLocation.lat, 
+          startLocation.lng
+        );
+        setDistance(dist);
+        const dir = calculateDirection(
+          playerPosition.lat, 
+          playerPosition.lng, 
+          startLocation.lat, 
+          startLocation.lng
+        );
+        setDirection(dir);
+      }
+    }
+  }, [gameLocations?.length]);
+
   return (
     <div className="map-container h-full rounded-md overflow-hidden relative border-4 border-[#2d1b2d] shadow-[0_0_15px_rgba(0,0,0,0.5)]">
       <div id="map" ref={mapRef} className="h-full w-full z-[1]"></div>
+      
+      {/* Distance meter and directional hint */}
+      {selectedLocation && (
+        <div className="absolute bottom-3 left-3 right-3 bg-black/80 border border-[#2d1b2d] rounded-md p-3 text-[#e8e0c9] font-interface z-10">
+          <div className="flex justify-between items-center mb-1">
+            <h3 className="text-sm font-bold text-[#e8e0c9]">
+              {selectedLocation.name}
+            </h3>
+            <span className="text-xs bg-[#1a3a3a] px-2 py-1 rounded-full">
+              {Math.round(distance)}m
+            </span>
+          </div>
+          
+          <div className="text-sm italic opacity-80">
+            {getDirectionalHint(direction, distance)}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
