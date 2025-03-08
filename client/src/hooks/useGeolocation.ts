@@ -50,10 +50,10 @@ export const useGeolocation = (): GeolocationHookReturn => {
 
     // Error handler - use default Tampere position if geolocation fails
     const handleError = (error: GeolocationPositionError) => {
-      // Set default position in Tampere, Finland
+      // Set default position in Tampere, Finland - slightly offset from the story point
       setPosition({
-        lat: 61.47422624340799,
-        lng: 23.727072093722093
+        lat: 61.47422624340799 + 0.001, // Slight offset for testing distance meter
+        lng: 23.727072093722093 + 0.002
       });
       
       // Still report the error
