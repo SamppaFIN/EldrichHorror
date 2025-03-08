@@ -185,6 +185,10 @@ type GameContextType = {
   isChoicesShown: boolean;
   showHint: boolean;
   currentCutscene: Cutscene | null;
+  isStoryDialogOpen: boolean;
+  storyDialogTitle: string;
+  storyDialogText: string;
+  showStageLocations: boolean;
   
   startGame: () => void;
   restartGame: () => void;
@@ -202,6 +206,9 @@ type GameContextType = {
   showDebugScreen: () => void;
   closeDebugScreen: (returnScreen?: Screen) => void;
   showHighscores: () => void;
+  openStoryDialog: (title: string, text: string) => void;
+  closeStoryDialog: () => void;
+  showNextStageDestinations: () => void;
 };
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -217,6 +224,12 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   const [currentCutscene, setCurrentCutscene] = useState<Cutscene | null>(null);
   const [currentNarrative, setCurrentNarrative] = useState('');
   const [isChoicesShown, setIsChoicesShown] = useState(false);
+  
+  // Story dialog state
+  const [isStoryDialogOpen, setIsStoryDialogOpen] = useState(false);
+  const [storyDialogTitle, setStoryDialogTitle] = useState('');
+  const [storyDialogText, setStoryDialogText] = useState('');
+  const [showStageLocations, setShowStageLocations] = useState(false);
   
   const { toast } = useToast();
   
@@ -523,6 +536,60 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     });
   };
   
+  // Story dialog methods
+  const openStoryDialog = (title: string, text: string) => {
+    setStoryDialogTitle(title);
+    setStoryDialogText(text);
+    setIsStoryDialogOpen(true);
+    
+    // Play a sound effect for the story dialog
+    PlaySound('effect', 'https://freesound.org/data/previews/244/244954_4486188-lq.mp3');
+  };
+  
+  const closeStoryDialog = () => {
+    setIsStoryDialogOpen(false);
+  };
+  
+  // Show the destination points of the next stage
+  const showNextStageDestinations = () => {
+    // Show toast notification
+    toast({
+      title: "New Locations Revealed",
+      description: "Check your map for new destination markers",
+    });
+    
+    setShowStageLocations(true);
+    
+    // Play discovery sound
+    PlaySound('effect', 'https://freesound.org/data/previews/320/320655_5260872-lq.mp3');
+  };
+  
+  // Show initial story dialog when game starts
+  useEffect(() => {
+    if (gameState.screen === 'game' && gameState.stage === 'start' && playerPosition) {
+      // Make sure the user interacted with the app first
+      const timer = setTimeout(() => {
+        openStoryDialog(
+          "Ancient Map Discovery",
+          "As you examine the weathered parchment, your eyes trace over strange sigils and coordinates. The ancient map reveals locations of mystical significance around Tampere, each marked with an ominous symbol.\n\nThe handwritten notes in the margins speak of a dark presence beneath the city - an ancient entity stirring from its slumber.\n\nYour journey begins here. Locate the marked sites and unravel the mystery before it's too late."
+        );
+      }, 1500);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [gameState.screen, gameState.stage, playerPosition]);
+  
+  // Automatically show next stage destinations after closing story dialog at start
+  useEffect(() => {
+    if (!isStoryDialogOpen && gameState.stage === 'start' && storyDialogTitle === "Ancient Map Discovery") {
+      const timer = setTimeout(() => {
+        showNextStageDestinations();
+      }, 1000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isStoryDialogOpen, gameState.stage, storyDialogTitle]);
+  
   return (
     <GameContext.Provider value={{
       gameState,
@@ -537,6 +604,10 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       isChoicesShown,
       showHint,
       currentCutscene,
+      isStoryDialogOpen,
+      storyDialogTitle,
+      storyDialogText,
+      showStageLocations,
       
       startGame,
       restartGame,
@@ -553,7 +624,10 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       completeCutscene,
       showDebugScreen,
       closeDebugScreen,
-      showHighscores
+      showHighscores,
+      openStoryDialog,
+      closeStoryDialog,
+      showNextStageDestinations
     }}>
       {children}
     </GameContext.Provider>

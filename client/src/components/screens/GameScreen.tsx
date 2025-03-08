@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useGameContext } from '@/context/GameContext';
 import MapComponent from '@/components/map/MapComponent';
 import { GameOverlays, ProgressBar, PixelButton, ChoiceButton, InventoryItem, SanityEffect, DebugButton } from '@/components/GameComponents';
+import StoryDialog from '@/components/StoryDialog';
 import { LocationType, StoryChoice } from '@/types/gameTypes';
 
 const GameScreen = () => {
