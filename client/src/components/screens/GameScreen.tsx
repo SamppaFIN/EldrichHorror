@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useGameContext } from '@/context/GameContext';
 import MapComponent from '@/components/map/MapComponent';
-import { GameOverlays, ProgressBar, PixelButton, ChoiceButton, InventoryItem, SanityEffect } from '@/components/GameComponents';
+import { GameOverlays, ProgressBar, PixelButton, ChoiceButton, InventoryItem, SanityEffect, DebugButton } from '@/components/GameComponents';
 import { LocationType, StoryChoice } from '@/types/gameTypes';
 
 const GameScreen = () => {
@@ -18,7 +18,11 @@ const GameScreen = () => {
     currentStageInfo,
     currentNarrative,
     currentChoices,
-    isChoicesShown
+    isChoicesShown,
+    showDebugScreen,
+    closeDebugScreen,
+    setHealth,
+    setSanity
   } = useGameContext();
 
   // Game Effects - Low sanity visualization
@@ -42,6 +46,16 @@ const GameScreen = () => {
     <div className="screen bg-[#333333] h-screen overflow-hidden">
       <GameOverlays />
       <SanityEffect sanity={sanityMeterValue} />
+      
+      {/* Debug Button */}
+      <div className="absolute top-4 right-4 z-10">
+        <DebugButton onClick={showDebugScreen}>Debug</DebugButton>
+      </div>
+      
+      {/* Game Over Button */}
+      <div className="absolute top-4 right-24 z-10">
+        <DebugButton onClick={() => closeDebugScreen('gameover')}>Game Over</DebugButton>
+      </div>
       
       <div className="flex h-full flex-col lg:flex-row p-4">
         {/* Left Panel - Map & Status */}
