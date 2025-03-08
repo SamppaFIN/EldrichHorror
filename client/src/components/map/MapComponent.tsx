@@ -51,13 +51,14 @@ const MapComponent = ({ onTriggerLocation }: MapComponentProps) => {
           maxZoom: 19
         }).addTo(mapInstanceRef.current);
         
-        // Create player marker with pulsing effect
+        // Create player marker with enhanced pulsing effect
         const playerIcon = L.divIcon({
           className: 'player-marker',
-          iconSize: [20, 20],
-          html: `<div class="w-[20px] h-[20px] rounded-full bg-[#e8e0c9] border-[3px] border-[#1565c0] 
-                shadow-[0_0_10px_rgba(21,101,192,0.7)] relative z-10">
-                <div class="absolute inset-0 rounded-full bg-[#1565c0] animate-ping opacity-50"></div>
+          iconSize: [28, 28],
+          html: `<div class="w-[28px] h-[28px] rounded-full bg-[#e8e0c9] border-[4px] border-[#1565c0] 
+                shadow-[0_0_15px_rgba(21,101,192,0.9)] relative z-20">
+                <div class="absolute inset-0 rounded-full bg-[#1565c0] animate-ping opacity-70"></div>
+                <div class="absolute -inset-2 rounded-full border-4 border-[#1565c0]/30 animate-pulse"></div>
                 </div>`
         });
         
@@ -66,14 +67,15 @@ const MapComponent = ({ onTriggerLocation }: MapComponentProps) => {
           { icon: playerIcon }
         ).addTo(mapInstanceRef.current);
         
-        // Add accuracy circle around player (with 10m default radius)
+        // Add enhanced accuracy circle around player (with 15m default radius)
         accuracyCircleRef.current = L.circle([initialPosition.lat, initialPosition.lng], {
-          radius: 10,
+          radius: 15,
           className: 'accuracy-circle',
-          fillOpacity: 0.1,
+          fillOpacity: 0.15,
           fillColor: '#1565c0',
           color: '#1565c0',
-          weight: 1
+          weight: 2,
+          dashArray: '4,8'
         }).addTo(mapInstanceRef.current);
         
         // Add location markers
@@ -106,10 +108,12 @@ const MapComponent = ({ onTriggerLocation }: MapComponentProps) => {
         accuracyCircleRef.current.setLatLng([playerPosition.lat, playerPosition.lng]);
       }
       
-      // Center map on player with smooth animation
-      mapInstanceRef.current.panTo([playerPosition.lat, playerPosition.lng], {
+      // Always center map on player with smooth animation
+      mapInstanceRef.current.setView([playerPosition.lat, playerPosition.lng], 
+        mapInstanceRef.current.getZoom(), {
         animate: true,
-        duration: 0.5
+        duration: 0.5,
+        noMoveStart: true
       });
       
       // Record update time
@@ -365,18 +369,18 @@ const MapComponent = ({ onTriggerLocation }: MapComponentProps) => {
   }, [gameLocations?.length]);
 
   return (
-    <div className="map-container h-full rounded-md overflow-hidden relative border-4 border-[#2d1b2d] shadow-[0_0_15px_rgba(0,0,0,0.5)]">
+    <div className="map-container h-full rounded-md overflow-hidden relative border-2 border-[#2d1b2d] shadow-[0_0_15px_rgba(0,0,0,0.5)]">
       <div id="map" ref={mapRef} className="h-full w-full z-[1]"></div>
       
-      {/* Position update indicator */}
-      <div className="absolute top-3 right-3 bg-black/70 px-2 py-1 text-[10px] text-[#e8e0c9] rounded-sm z-10 flex items-center">
-        <div className="w-2 h-2 bg-green-500 rounded-full mr-1 animate-pulse"></div>
-        <span>Updated: {lastUpdateTime}</span>
+      {/* Position update indicator - more visible */}
+      <div className="absolute top-3 left-3 bg-[#1a3a3a]/90 backdrop-blur-sm px-3 py-1.5 text-xs text-[#e8e0c9] rounded-md z-10 flex items-center border border-[#e8e0c9]/30 shadow-md">
+        <div className="w-2.5 h-2.5 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+        <span>GPS: {lastUpdateTime}</span>
       </div>
       
-      {/* Distance meter and directional hint */}
+      {/* Distance meter and directional hint - moved away from bottom for mobile */}
       {selectedLocation && (
-        <div className="absolute bottom-3 left-3 right-3 bg-black/80 border border-[#2d1b2d] rounded-md p-3 text-[#e8e0c9] font-interface z-10">
+        <div className="absolute top-14 left-3 right-3 md:left-3 md:right-auto md:w-[280px] bg-[#2d1b2d]/90 backdrop-blur-md rounded-md p-3 text-[#e8e0c9] font-interface z-10 border border-[#1a3a3a] shadow-md">
           <div className="flex justify-between items-center mb-1">
             <h3 className="text-sm font-bold text-[#e8e0c9]">
               {selectedLocation.name}
@@ -386,7 +390,7 @@ const MapComponent = ({ onTriggerLocation }: MapComponentProps) => {
             </span>
           </div>
           
-          <div className="text-sm italic opacity-80">
+          <div className="text-sm italic opacity-90">
             {getDirectionalHint(direction, distance)}
           </div>
         </div>
