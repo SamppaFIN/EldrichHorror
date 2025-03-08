@@ -16,13 +16,16 @@ const MapComponent = ({ onTriggerLocation }: MapComponentProps) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const playerMarkerRef = useRef<any>(null);
+  const accuracyCircleRef = useRef<any>(null);
   const locationMarkersRef = useRef<any[]>([]);
   const locationCirclesRef = useRef<any[]>([]);
+  const lastPositionUpdateRef = useRef<number>(Date.now());
   
   // State for distance meter and directional hints
   const [selectedLocation, setSelectedLocation] = useState<LocationType | null>(null);
   const [distance, setDistance] = useState<number>(0);
   const [direction, setDirection] = useState<string>('');
+  const [lastUpdateTime, setLastUpdateTime] = useState<string>('');
   
   // Initialize Leaflet map when component mounts
   useEffect(() => {
@@ -48,11 +51,14 @@ const MapComponent = ({ onTriggerLocation }: MapComponentProps) => {
           maxZoom: 19
         }).addTo(mapInstanceRef.current);
         
-        // Create player marker
+        // Create player marker with pulsing effect
         const playerIcon = L.divIcon({
           className: 'player-marker',
-          iconSize: [15, 15],
-          html: '<div class="w-[15px] h-[15px] rounded-full bg-[#e8e0c9] border-[3px] border-[#1565c0] shadow-[0_0_10px_rgba(21,101,192,0.7)]"></div>'
+          iconSize: [20, 20],
+          html: `<div class="w-[20px] h-[20px] rounded-full bg-[#e8e0c9] border-[3px] border-[#1565c0] 
+                shadow-[0_0_10px_rgba(21,101,192,0.7)] relative z-10">
+                <div class="absolute inset-0 rounded-full bg-[#1565c0] animate-ping opacity-50"></div>
+                </div>`
         });
         
         playerMarkerRef.current = L.marker(
@@ -60,8 +66,21 @@ const MapComponent = ({ onTriggerLocation }: MapComponentProps) => {
           { icon: playerIcon }
         ).addTo(mapInstanceRef.current);
         
+        // Add accuracy circle around player (with 10m default radius)
+        accuracyCircleRef.current = L.circle([initialPosition.lat, initialPosition.lng], {
+          radius: 10,
+          className: 'accuracy-circle',
+          fillOpacity: 0.1,
+          fillColor: '#1565c0',
+          color: '#1565c0',
+          weight: 1
+        }).addTo(mapInstanceRef.current);
+        
         // Add location markers
         addLocationMarkers();
+        
+        // Set initial update time
+        setLastUpdateTime(new Date().toLocaleTimeString());
       }
     };
     
@@ -79,14 +98,33 @@ const MapComponent = ({ onTriggerLocation }: MapComponentProps) => {
   // Update player position on map
   useEffect(() => {
     if (mapInstanceRef.current && playerMarkerRef.current && playerPosition) {
-      // Update player marker position
+      // Update player marker position with smooth animation
       playerMarkerRef.current.setLatLng([playerPosition.lat, playerPosition.lng]);
       
-      // Center map on player
-      mapInstanceRef.current.panTo([playerPosition.lat, playerPosition.lng]);
+      // Update accuracy circle
+      if (accuracyCircleRef.current) {
+        accuracyCircleRef.current.setLatLng([playerPosition.lat, playerPosition.lng]);
+      }
+      
+      // Center map on player with smooth animation
+      mapInstanceRef.current.panTo([playerPosition.lat, playerPosition.lng], {
+        animate: true,
+        duration: 0.5
+      });
+      
+      // Record update time
+      const now = Date.now();
+      const timeSinceLastUpdate = now - lastPositionUpdateRef.current;
+      lastPositionUpdateRef.current = now;
+      
+      // Update last update time display
+      setLastUpdateTime(new Date().toLocaleTimeString());
       
       // Check for proximity triggers
       checkProximityTriggers();
+      
+      // Log position update in console
+      console.log(`Position updated at ${new Date().toLocaleTimeString()}, Δt: ${Math.round(timeSinceLastUpdate)}ms`);
     }
   }, [playerPosition]);
   
@@ -329,6 +367,12 @@ const MapComponent = ({ onTriggerLocation }: MapComponentProps) => {
   return (
     <div className="map-container h-full rounded-md overflow-hidden relative border-4 border-[#2d1b2d] shadow-[0_0_15px_rgba(0,0,0,0.5)]">
       <div id="map" ref={mapRef} className="h-full w-full z-[1]"></div>
+      
+      {/* Position update indicator */}
+      <div className="absolute top-3 right-3 bg-black/70 px-2 py-1 text-[10px] text-[#e8e0c9] rounded-sm z-10 flex items-center">
+        <div className="w-2 h-2 bg-green-500 rounded-full mr-1 animate-pulse"></div>
+        <span>Updated: {lastUpdateTime}</span>
+      </div>
       
       {/* Distance meter and directional hint */}
       {selectedLocation && (
