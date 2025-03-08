@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useGameContext } from '@/context/GameContext';
 import MapComponent from '@/components/map/MapComponent';
 import { GameOverlays, ProgressBar, PixelButton, ChoiceButton, InventoryItem, SanityEffect, DebugButton } from '@/components/GameComponents';
-import StoryDialog from '@/components/StoryDialog';
 import { LocationType, StoryChoice } from '@/types/gameTypes';
 
 const GameScreen = () => {
@@ -23,13 +22,7 @@ const GameScreen = () => {
     showDebugScreen,
     closeDebugScreen,
     setHealth,
-    setSanity,
-    // Story dialog
-    isStoryDialogOpen,
-    storyDialogTitle,
-    storyDialogText,
-    closeStoryDialog,
-    showStageLocations
+    setSanity
   } = useGameContext();
 
   // Game Effects - Low sanity visualization
@@ -53,14 +46,6 @@ const GameScreen = () => {
     <div className="screen bg-[#333333] h-screen overflow-hidden">
       <GameOverlays />
       <SanityEffect sanity={sanityMeterValue} />
-      
-      {/* Story Dialog */}
-      <StoryDialog
-        title={storyDialogTitle}
-        text={storyDialogText}
-        isOpen={isStoryDialogOpen}
-        onClose={closeStoryDialog}
-      />
       
       {/* Debug Button */}
       <div className="absolute top-4 right-4 z-10">
