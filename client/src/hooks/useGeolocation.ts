@@ -8,6 +8,7 @@ type GeolocationHookReturn = {
   isLoading: boolean;
   requestPermission: () => void;
   permissionState: PermissionState | null;
+  accuracy: number | null;
 };
 
 export const useGeolocation = (): GeolocationHookReturn => {
@@ -16,6 +17,7 @@ export const useGeolocation = (): GeolocationHookReturn => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [permissionState, setPermissionState] = useState<PermissionState | null>(null);
   const [permissionRequested, setPermissionRequested] = useState<boolean>(false);
+  const [accuracy, setAccuracy] = useState<number | null>(null);
   
   const lastUpdateRef = useRef<number>(Date.now());
   const positionRef = useRef<GeoPosition | null>(null);
@@ -70,9 +72,15 @@ export const useGeolocation = (): GeolocationHookReturn => {
         lng: position.coords.longitude
       };
       
+      // Get accuracy from coords - represents the accuracy of the position in meters
+      const positionAccuracy = position.coords.accuracy || 15; // Default to 15m if not available
+      
       // Update the position state and ref
       setPosition(newPosition);
       positionRef.current = newPosition;
+      
+      // Update accuracy state
+      setAccuracy(positionAccuracy);
       
       // Clear any previous errors
       setError(null);
@@ -91,7 +99,7 @@ export const useGeolocation = (): GeolocationHookReturn => {
         toastShownRef.current = true;
       }
       
-      console.log(`Position updated at ${new Date().toLocaleTimeString()}: ${newPosition.lat}, ${newPosition.lng}`);
+      console.log(`Position updated at ${new Date().toLocaleTimeString()}: ${newPosition.lat}, ${newPosition.lng} (accuracy: ${positionAccuracy}m)`);
     };
 
     // Error handler - use default Tampere position if geolocation fails
@@ -152,6 +160,9 @@ export const useGeolocation = (): GeolocationHookReturn => {
   // Function to request permission explicitly - can be called from UI
   const requestPermission = useCallback(() => {
     setPermissionRequested(true);
+    
+    // Default accuracy when using fallback position
+    setAccuracy(30); // 30 meters default accuracy for fallback position
     
     // If permissions API is available, check status
     if (navigator.permissions) {
@@ -247,6 +258,7 @@ export const useGeolocation = (): GeolocationHookReturn => {
     error, 
     isLoading, 
     requestPermission,
-    permissionState
+    permissionState,
+    accuracy
   };
 };

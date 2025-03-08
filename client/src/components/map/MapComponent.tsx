@@ -12,7 +12,7 @@ type MapComponentProps = {
 };
 
 const MapComponent = ({ onTriggerLocation }: MapComponentProps) => {
-  const { gameState, playerPosition, gameLocations } = useGameContext();
+  const { gameState, playerPosition, gameLocations, locationPermissionState, requestLocationPermission } = useGameContext();
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const playerMarkerRef = useRef<any>(null);
@@ -368,18 +368,77 @@ const MapComponent = ({ onTriggerLocation }: MapComponentProps) => {
     }
   }, [gameLocations?.length]);
 
+  // Get GPS status indicator based on permission state
+  const getGpsStatusIndicator = () => {
+    switch (locationPermissionState) {
+      case 'granted':
+        return (
+          <div className="w-2.5 h-2.5 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+        );
+      case 'denied':
+        return (
+          <div className="w-2.5 h-2.5 bg-red-500 rounded-full mr-2"></div>
+        );
+      case 'prompt':
+        return (
+          <div className="w-2.5 h-2.5 bg-yellow-500 rounded-full mr-2 animate-pulse"></div>
+        );
+      default:
+        return (
+          <div className="w-2.5 h-2.5 bg-gray-500 rounded-full mr-2"></div>
+        );
+    }
+  };
+
+  // Get GPS status text based on permission state
+  const getGpsStatusText = () => {
+    if (!playerPosition && locationPermissionState !== 'granted') {
+      return "GPS: Unavailable";
+    } else if (playerPosition) {
+      return `GPS: ${lastUpdateTime}`;
+    } else {
+      return "GPS: Waiting...";
+    }
+  };
+
   return (
     <div className="map-container h-full rounded-md overflow-hidden relative border-2 border-[#2d1b2d] shadow-[0_0_15px_rgba(0,0,0,0.5)]">
       <div id="map" ref={mapRef} className="h-full w-full z-[1]"></div>
       
+      {/* Location permission overlay - show only when permission is denied or prompt */}
+      {(locationPermissionState === 'denied' || !playerPosition) && (
+        <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center z-20 backdrop-blur-sm">
+          <div className="bg-[#2d1b2d] rounded-md p-4 max-w-[300px] text-center">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto mb-3 text-[#e8e0c9]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <h3 className="text-[#e8e0c9] text-lg font-bold mb-2">Location Access Required</h3>
+            <p className="text-[#e8e0c9]/80 mb-4">
+              This game uses your location to find nearby points of interest and enhance your gameplay experience.
+            </p>
+            <button 
+              onClick={requestLocationPermission}
+              className="bg-[#1565c0] text-[#e8e0c9] px-4 py-2 rounded-md hover:bg-[#1976d2] transition-colors mx-auto"
+            >
+              Enable GPS Location
+            </button>
+          </div>
+        </div>
+      )}
+      
       {/* Position update indicator - more visible */}
-      <div className="absolute top-3 left-3 bg-[#1a3a3a]/90 backdrop-blur-sm px-3 py-1.5 text-xs text-[#e8e0c9] rounded-md z-10 flex items-center border border-[#e8e0c9]/30 shadow-md">
-        <div className="w-2.5 h-2.5 bg-green-500 rounded-full mr-2 animate-pulse"></div>
-        <span>GPS: {lastUpdateTime}</span>
+      <div 
+        className={`absolute top-3 left-3 ${playerPosition ? 'bg-[#1a3a3a]/90' : 'bg-[#8b0000]/90'} backdrop-blur-sm px-3 py-1.5 text-xs text-[#e8e0c9] rounded-md z-30 flex items-center border border-[#e8e0c9]/30 shadow-md`}
+        onClick={locationPermissionState !== 'granted' ? requestLocationPermission : undefined}
+        style={locationPermissionState !== 'granted' ? {cursor: 'pointer'} : {}}
+      >
+        {getGpsStatusIndicator()}
+        <span>{getGpsStatusText()}</span>
       </div>
       
       {/* Distance meter and directional hint - moved away from bottom for mobile */}
-      {selectedLocation && (
+      {selectedLocation && playerPosition && (
         <div className="absolute top-14 left-3 right-3 md:left-3 md:right-auto md:w-[280px] bg-[#2d1b2d]/90 backdrop-blur-md rounded-md p-3 text-[#e8e0c9] font-interface z-10 border border-[#1a3a3a] shadow-md">
           <div className="flex justify-between items-center mb-1">
             <h3 className="text-sm font-bold text-[#e8e0c9]">
