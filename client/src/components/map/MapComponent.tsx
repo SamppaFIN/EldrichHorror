@@ -498,6 +498,31 @@ const MapComponent = ({ onTriggerLocation }: MapComponentProps) => {
                 </svg>
                 Open Device Settings
               </button>
+              
+              {/* Debug Mode Button - Use for dev environments */}
+              <div className="mt-4 pt-4 border-t border-[#e8e0c9]/20">
+                <p className="text-xs text-[#e8e0c9]/60 mb-2">Developer Options:</p>
+                <button 
+                  onClick={() => {
+                    // Set Tampere location by default
+                    const debugLocation = {
+                      lat: 61.4978, 
+                      lng: 23.7610
+                    };
+                    localStorage.setItem('debug_location', JSON.stringify(debugLocation));
+                    window.location.reload();
+                  }}
+                  className="bg-[#8b0000] text-[#e8e0c9] px-4 py-2 rounded-md hover:bg-[#a50000] transition-colors flex items-center justify-center gap-2 w-full"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  Use Debug Location
+                </button>
+                <div className="text-[10px] text-[#e8e0c9]/40 mt-1 text-center">
+                  This will simulate location in Tampere, Finland
+                </div>
+              </div>
             </div>
           </div>
         </div>

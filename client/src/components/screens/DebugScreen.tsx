@@ -140,25 +140,92 @@ const DebugScreen = () => {
                   className="bg-[#1a3a3a] p-1 w-40 font-interface"
                 />
               </div>
-              <DebugButton 
-                className="w-40 mt-2"
-                onClick={() => {
-                  try {
-                    const lat = parseFloat(simLat);
-                    const lng = parseFloat(simLng);
-                    if (!isNaN(lat) && !isNaN(lng)) {
-                      // This would call a function to update location
-                      window.localStorage.setItem('debug_location', JSON.stringify({ lat, lng }));
-                      // Reload to apply simulation
-                      window.location.reload();
+              <div className="flex items-center mt-2 space-x-2">
+                <DebugButton 
+                  className="w-40"
+                  onClick={() => {
+                    try {
+                      const lat = parseFloat(simLat);
+                      const lng = parseFloat(simLng);
+                      if (!isNaN(lat) && !isNaN(lng)) {
+                        // This would call a function to update location
+                        window.localStorage.setItem('debug_location', JSON.stringify({ lat, lng }));
+                        // Reload to apply simulation
+                        window.location.reload();
+                      }
+                    } catch (e) {
+                      console.error('Invalid coordinates');
                     }
-                  } catch (e) {
-                    console.error('Invalid coordinates');
-                  }
-                }}
-              >
-                Update Location
-              </DebugButton>
+                  }}
+                >
+                  Update Location
+                </DebugButton>
+                
+                <DebugButton 
+                  onClick={() => {
+                    window.localStorage.removeItem('debug_location');
+                    window.location.reload();
+                  }}
+                >
+                  Clear Simulation
+                </DebugButton>
+              </div>
+              
+              <div className="mt-3">
+                <h4 className="font-interface text-sm mb-2">Preset Locations:</h4>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                  <DebugButton 
+                    onClick={() => {
+                      // Tampere, Finland center
+                      setSimLat('61.4978');
+                      setSimLng('23.7610');
+                    }}
+                  >
+                    Tampere Center
+                  </DebugButton>
+                  <DebugButton 
+                    onClick={() => {
+                      // Near first story point (slightly adjusted)
+                      setSimLat('61.4758');
+                      setSimLng('23.7239');
+                    }}
+                  >
+                    Story Point 1
+                  </DebugButton>
+                  <DebugButton 
+                    onClick={() => {
+                      // Near first secret (slightly adjusted)
+                      setSimLat('61.4759');
+                      setSimLng('23.7244');
+                    }}
+                  >
+                    Secret Point 1
+                  </DebugButton>
+                  <DebugButton 
+                    onClick={() => {
+                      // Default location near Pyynikki
+                      setSimLat('61.4950');
+                      setSimLng('23.7412');
+                    }}
+                  >
+                    Pyynikki Area
+                  </DebugButton>
+                  <DebugButton 
+                    onClick={() => {
+                      // Apply the currently entered coordinates directly
+                      const lat = parseFloat(simLat);
+                      const lng = parseFloat(simLng);
+                      if (!isNaN(lat) && !isNaN(lng)) {
+                        window.localStorage.setItem('debug_location', JSON.stringify({ lat, lng }));
+                        window.location.reload();
+                      }
+                    }}
+                    className="md:col-span-2"
+                  >
+                    Use Current Coordinates
+                  </DebugButton>
+                </div>
+              </div>
             </div>
           </div>
           
