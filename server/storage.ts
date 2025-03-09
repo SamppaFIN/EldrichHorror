@@ -154,6 +154,52 @@ const DEFAULT_LOCATIONS: InsertLocation[] = [
   }
 ];
 
+// Default blog posts for eldritch chronicles
+const DEFAULT_BLOG_POSTS: InsertBlogPost[] = [
+  {
+    title: "The Forgotten History of Tampere's Eldritch Past",
+    content: `
+<h2>Whispers from the Past: Tampere's Eldritch History</h2>
+
+<p>Deep in the archives of Tampere's oldest library, documents speak of strange phenomena that occurred around the city's lakes and forests centuries ago. Before industrialization transformed Tampere into Finland's manufacturing center, the region was known for unexplained disappearances and peculiar folklore.</p>
+
+<p>In 1789, a series of journals from local residents described "lights dancing beneath the waters of Näsijärvi" and "voices that spoke in unknown tongues from the mist." These accounts coincided with unusually cold summers and reports of "shadowy figures" seen at the edges of forests.</p>
+
+<p>The most intriguing account comes from Reverend Mikael Särkilahti, who documented his encounter with what he described as "ancient stone formations bearing symbols not made by human hands" discovered in what is now Pyynikki Ridge. His drawings of these symbols bear striking resemblance to pictographs found in much older civilizations across Northern Europe.</p>
+
+<p>Perhaps most disturbing was his final entry: "The symbols speak to those who listen. They tell of Those Who Wait Below, ancient entities that sleep beneath the waters and earth, dreaming of their return. I fear I have learned too much, and now they know my thoughts."</p>
+
+<p>Reverend Särkilahti disappeared shortly after this entry, and local authorities attributed his disappearance to drowning, though his body was never recovered.</p>
+
+<p>As you explore Tampere's landmarks during your adventure, remember that the boundaries between our world and others may be thinner in certain places, especially those marked on ancient maps...</p>
+`,
+    author: "Professor H. Armitage",
+    summary: "Exploring the mysterious historical accounts of strange phenomena in Tampere, Finland before industrialization transformed the region."
+  },
+  {
+    title: "The Algorithm That Glimpsed Between Worlds",
+    content: `
+<h2>The Algorithm That Glimpsed Between Worlds</h2>
+
+<p>In the sterile corridors of Quantum Computing Research Division, few spoke of Dr. Elena Karishov's final project. Official records indicate only equipment malfunction and data corruption, but those who worked closest to her whispered of something far more disturbing.</p>
+
+<p>Dr. Karishov had developed an algorithm designed to process multiple dimensional mathematics - calculations beyond conventional understanding. Her notes, partially redacted in official archives, spoke of "mathematical spaces where our reality's rules bend" and "computational gateways to realms governed by alien geometries."</p>
+
+<p>The algorithm was activated on October 17th. For exactly 3.4 seconds, every monitor in the facility displayed patterns that, according to surviving documentation, "responded to observers" and "depicted structures impossible to represent in three-dimensional space." Three researchers present during the activation reported hearing voices "from inside the mathematical spaces," though psychological evaluations were quick to dismiss these claims.</p>
+
+<p>The central processing unit was found partially transformed into an unknown crystalline material that defied analysis. More concerning were Dr. Karishov's final notes, written in increasingly erratic handwriting:</p>
+
+<blockquote>"It sees us. The algorithm didn't create a window—it created a mirror. What gazes back has always been watching, separated only by the thinnest mathematical membrane. They exist in the angles between dimensions, in the spaces our minds cannot perceive. And now they've seen our technological searching, reaching out across the void. The algorithm isn't dangerous because it allows us to see them. It's dangerous because it allowed them to finally see us clearly."</blockquote>
+
+<p>The project was immediately terminated. Equipment was dismantled, research confiscated. Dr. Karishov resigned her position and was last reported living in isolation in Northern Finland, refusing all contact with former colleagues.</p>
+
+<p>Perhaps some knowledge is better left undiscovered, some doors better left unopened. In your pursuit of ancient mysteries around Tampere, remember that curiosity has its price, and some truths cannot be unlearned once discovered...</p>
+`,
+    author: "Dr. William West",
+    summary: "The chilling account of a quantum computing experiment that may have briefly connected with entities from beyond our dimensional understanding."
+  }
+];
+
 // modify the interface with any CRUD methods
 // you might need
 export interface IStorage {
@@ -215,6 +261,20 @@ export class MemStorage implements IStorage {
         ...location,
         cutsceneData: location.cutsceneData || null
       });
+    });
+    
+    // Add default blog posts
+    DEFAULT_BLOG_POSTS.forEach(blogPost => {
+      const id = this.blogPostCurrentId++;
+      const now = new Date();
+      
+      const newBlogPost: BlogPost = {
+        ...blogPost,
+        id,
+        createdAt: now
+      };
+      
+      this.blogPosts.set(id, newBlogPost);
     });
   }
 

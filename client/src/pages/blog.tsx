@@ -11,6 +11,7 @@ interface BlogPost {
   title: string;
   content: string;
   author: string;
+  summary?: string;
   createdAt: string;
 }
 
@@ -38,14 +39,27 @@ export default function BlogPage() {
     });
   };
   
-  // Format content for preview (first 150 characters)
+  // Format content for preview (first 150 characters), remove HTML tags if present
   const formatPreview = (content: string) => {
-    if (content.length <= 150) return content;
-    return content.substring(0, 150) + '...';
+    // Strip HTML tags for preview
+    const plainText = content.replace(/<[^>]*>/g, '');
+    // Trim whitespace and ensure consistent spacing
+    const cleanText = plainText.replace(/\s+/g, ' ').trim();
+    
+    if (cleanText.length <= 150) return cleanText;
+    return cleanText.substring(0, 150) + '...';
   };
   
-  // Format content for display with proper paragraphs
+  // Format content for display with proper HTML
   const formatContent = (content: string) => {
+    // If content has HTML tags, render it as HTML
+    if (content.includes('<')) {
+      return (
+        <div dangerouslySetInnerHTML={{ __html: content }} className="blog-content prose prose-invert max-w-none" />
+      );
+    }
+    
+    // Fallback to basic paragraph formatting
     return content.split('\n\n').map((paragraph, index) => (
       <p key={index} className="mb-4">{paragraph}</p>
     ));
@@ -119,7 +133,7 @@ export default function BlogPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="text-sm text-gray-300">
-                  {formatPreview(post.content)}
+                  {post.summary || formatPreview(post.content)}
                 </CardContent>
                 <CardFooter>
                   <PixelButton size="sm">Read More</PixelButton>

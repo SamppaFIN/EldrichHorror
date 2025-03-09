@@ -72,6 +72,7 @@ export const blogPosts = pgTable("blog_posts", {
   title: text("title").notNull(),
   content: text("content").notNull(),
   author: text("author").notNull(),
+  summary: text("summary"), // Added summary field
   createdAt: timestamp("created_at").notNull().defaultNow()
 });
 
