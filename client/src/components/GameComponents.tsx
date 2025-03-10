@@ -352,16 +352,19 @@ type DebugButtonProps = {
   children: React.ReactNode;
   onClick?: () => void;
   className?: string;
+  disabled?: boolean;
 };
 
-export const DebugButton = ({ children, onClick, className }: DebugButtonProps) => {
+export const DebugButton = ({ children, onClick, className, disabled }: DebugButtonProps) => {
   return (
     <button
       className={cn(
         "px-3 py-1 bg-[#1a3a3a] font-interface text-sm hover:bg-[#2d1b2d] transition-colors",
+        disabled && "opacity-50 cursor-not-allowed",
         className
       )}
-      onClick={onClick}
+      onClick={disabled ? undefined : onClick}
+      disabled={disabled}
     >
       {children}
     </button>
