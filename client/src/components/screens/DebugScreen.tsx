@@ -330,12 +330,64 @@ const DebugScreen = () => {
                       if (audioInitialized) {
                         await ResumeAudioContext();
                         ApplySanityAudioEffects(testSanityLevel);
+                        
+                        // Demonstrate effects with a test sound when applied
+                        // Create a continuous sound to demo the effects
+                        try {
+                          const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+                          const oscillator = ctx.createOscillator();
+                          const gainNode = ctx.createGain();
+                          
+                          // Set parameters based on sanity level
+                          oscillator.type = testSanityLevel < 30 ? 'sawtooth' : 'sine';
+                          oscillator.frequency.value = 300 - (100 - testSanityLevel); // Lower pitch at lower sanity
+                          
+                          // Create filter based on sanity
+                          const filter = ctx.createBiquadFilter();
+                          filter.type = 'lowpass';
+                          filter.frequency.value = testSanityLevel * 100 + 500; // More filtering at lower sanity
+                          
+                          // Set volume
+                          gainNode.gain.value = 0.2;
+                          
+                          // Connect
+                          oscillator.connect(filter);
+                          filter.connect(gainNode);
+                          gainNode.connect(ctx.destination);
+                          
+                          // Add modulation effects at lower sanity
+                          if (testSanityLevel < 60) {
+                            const lfo = ctx.createOscillator();
+                            const lfoGain = ctx.createGain();
+                            lfo.frequency.value = 8; // Modulation rate
+                            lfoGain.gain.value = (60 - testSanityLevel) / 100;
+                            lfo.connect(lfoGain);
+                            lfoGain.connect(gainNode.gain);
+                            lfo.start();
+                            
+                            // Scheduled stop
+                            setTimeout(() => {
+                              lfo.stop();
+                            }, 2000);
+                          }
+                          
+                          // Play
+                          oscillator.start();
+                          
+                          // Scheduled stop
+                          setTimeout(() => {
+                            oscillator.stop();
+                            ctx.close();
+                          }, 2000);
+                        } catch (e) {
+                          console.warn('Failed to play demo effect:', e);
+                        }
                       }
                     }}
                     className={`text-xs ${!audioInitialized ? 'opacity-50' : ''}`}
                     disabled={!audioInitialized}
                   >
-                    Apply Effects
+                    Apply & Demo Effects
                   </DebugButton>
                   <DebugButton 
                     onClick={() => {
@@ -349,6 +401,15 @@ const DebugScreen = () => {
                   >
                     Reset Effects
                   </DebugButton>
+                </div>
+                
+                {/* Sanity level effect guide */}
+                <div className="text-xs mt-2 text-amber-200/70">
+                  <div>Sanity Effect Levels:</div>
+                  <div>100-70%: Normal audio</div>
+                  <div>69-40%: Subtle distortion</div>
+                  <div>39-20%: Moderate effects</div>
+                  <div>&lt;20%: Severe distortion</div>
                 </div>
               </div>
               
