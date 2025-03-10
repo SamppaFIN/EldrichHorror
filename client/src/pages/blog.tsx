@@ -18,29 +18,37 @@ interface BlogPost {
 export default function BlogPage() {
   const [selectedPostId, setSelectedPostId] = useState<number | null>(null);
   
-  const { data: blogPosts, isLoading: postsLoading } = useQuery({
+  const { data: blogPosts, isLoading: postsLoading } = useQuery<BlogPost[]>({
     queryKey: ['/api/blog-posts'],
     queryFn: getQueryFn({ on401: 'returnNull' }),
   });
   
-  const { data: selectedPost, isLoading: postLoading } = useQuery({
+  const { data: selectedPost, isLoading: postLoading } = useQuery<BlogPost>({
     queryKey: ['/api/blog-posts', selectedPostId],
     queryFn: getQueryFn({ on401: 'returnNull' }),
     enabled: !!selectedPostId,
   });
   
   // Format date for display
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    });
+  const formatDate = (dateString: string | undefined) => {
+    if (!dateString) return 'Unknown date';
+    
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+    } catch (e) {
+      return 'Invalid date';
+    }
   };
   
   // Format content for preview (first 150 characters), remove HTML tags if present
-  const formatPreview = (content: string) => {
+  const formatPreview = (content: string | undefined) => {
+    if (!content || typeof content !== 'string') return 'No content available';
+    
     // Strip HTML tags for preview
     const plainText = content.replace(/<[^>]*>/g, '');
     // Trim whitespace and ensure consistent spacing
@@ -51,18 +59,23 @@ export default function BlogPage() {
   };
   
   // Format content for display with proper HTML
-  const formatContent = (content: string) => {
-    // If content has HTML tags, render it as HTML
-    if (content.includes('<')) {
+  const formatContent = (content: string | undefined) => {
+    // Check if content exists and has HTML tags
+    if (content && typeof content === 'string' && content.includes('<')) {
       return (
         <div dangerouslySetInnerHTML={{ __html: content }} className="blog-content prose prose-invert max-w-none" />
       );
     }
     
     // Fallback to basic paragraph formatting
-    return content.split('\n\n').map((paragraph, index) => (
-      <p key={index} className="mb-4">{paragraph}</p>
-    ));
+    if (content && typeof content === 'string') {
+      return content.split('\n\n').map((paragraph, index) => (
+        <p key={index} className="mb-4">{paragraph}</p>
+      ));
+    }
+    
+    // If content is undefined or not a string
+    return <p>No content available</p>;
   };
   
   return (
