@@ -40,11 +40,11 @@ const mapWeatherCondition = (openWeatherCode: string): WeatherCondition => {
 
 const calculateWeatherEffects = (weather: WeatherData): WeatherEffects => {
   const baseEffects: WeatherEffects = {
-    condition: 'clear',
+    condition: weather.condition,
     sanityModifier: 1,
     difficultyModifier: 1,
     visibilityRange: 1,
-    narrativeModifier: '',
+    narrativeModifier: 'The air feels thick with anticipation...',
     audioModifier: 1
   };
 
