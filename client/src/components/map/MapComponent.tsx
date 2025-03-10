@@ -3,6 +3,8 @@ import { useGameContext } from '@/context/GameContext';
 import { useGeolocation } from '@/hooks/useGeolocation';
 import { calculateDistance } from '@/lib/locationUtils';
 import { LocationType } from '@/types/gameTypes';
+import { WeatherCondition } from '@/lib/weatherService';
+import { Cloud, CloudRain, CloudSnow, CloudFog, Sun, CloudLightning } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 
 // Import Leaflet dynamically (for SSR compatibility)
@@ -438,9 +440,53 @@ const MapComponent = ({ onTriggerLocation }: MapComponentProps) => {
     }
   };
 
+  // Get weather icon based on condition
+  const getWeatherIcon = () => {
+    if (!gameState.weatherEffects) return <Sun className="w-4 h-4 text-amber-300" />;
+    
+    switch (gameState.weatherEffects.condition) {
+      case 'thunderstorm':
+        return <CloudLightning className="w-4 h-4 text-purple-300 animate-pulse" />;
+      case 'rain':
+        return <CloudRain className="w-4 h-4 text-blue-300" />;
+      case 'snow':
+        return <CloudSnow className="w-4 h-4 text-white" />;
+      case 'fog':
+      case 'mist':
+        return <CloudFog className="w-4 h-4 text-gray-300" />;
+      case 'clouds':
+        return <Cloud className="w-4 h-4 text-gray-400" />;
+      default:
+        return <Sun className="w-4 h-4 text-amber-300" />;
+    }
+  };
+
+  // Get weather status text
+  const getWeatherText = () => {
+    if (!gameState.weatherEffects) return "Weather: Clear";
+    return `Weather: ${gameState.weatherEffects.condition.charAt(0).toUpperCase() + 
+      gameState.weatherEffects.condition.slice(1)}`;
+  };
+
   return (
     <div className="map-container h-full rounded-md overflow-hidden relative border-2 border-[#2d1b2d] shadow-[0_0_15px_rgba(0,0,0,0.5)]">
       <div id="map" ref={mapRef} className="h-full w-full z-[1]"></div>
+      
+      {/* Weather effect overlay */}
+      {gameState.weatherEffects && (
+        <div 
+          className="absolute inset-0 z-[2] pointer-events-none"
+          style={{
+            backgroundColor: gameState.weatherEffects.condition === 'fog' || 
+                            gameState.weatherEffects.condition === 'mist'
+              ? 'rgba(200, 200, 200, 0.3)'
+              : gameState.weatherEffects.condition === 'clouds'
+              ? 'rgba(100, 100, 100, 0.2)'
+              : 'transparent',
+            opacity: 1 - (gameState.weatherEffects.visibilityRange || 1)
+          }}
+        />
+      )}
       
       {/* Location permission overlay - show only when permission is denied or prompt */}
       {(locationPermissionState === 'denied' || !playerPosition) && (
@@ -528,14 +574,23 @@ const MapComponent = ({ onTriggerLocation }: MapComponentProps) => {
         </div>
       )}
       
-      {/* Position update indicator - more visible */}
-      <div 
-        className={`absolute top-3 left-3 ${playerPosition ? 'bg-[#1a3a3a]/90' : 'bg-[#8b0000]/90'} backdrop-blur-sm px-3 py-1.5 text-xs text-[#e8e0c9] rounded-md z-30 flex items-center border border-[#e8e0c9]/30 shadow-md`}
-        onClick={locationPermissionState !== 'granted' ? requestLocationPermission : undefined}
-        style={locationPermissionState !== 'granted' ? {cursor: 'pointer'} : {}}
-      >
-        {getGpsStatusIndicator()}
-        <span>{getGpsStatusText()}</span>
+      {/* Weather and GPS indicators */}
+      <div className="absolute top-3 left-3 flex flex-col gap-2 z-30">
+        {/* Weather status */}
+        <div className="bg-[#1a3a3a]/90 backdrop-blur-sm px-3 py-1.5 text-xs text-[#e8e0c9] rounded-md flex items-center border border-[#e8e0c9]/30 shadow-md">
+          {getWeatherIcon()}
+          <span className="ml-2">{getWeatherText()}</span>
+        </div>
+        
+        {/* Position update indicator */}
+        <div 
+          className={`${playerPosition ? 'bg-[#1a3a3a]/90' : 'bg-[#8b0000]/90'} backdrop-blur-sm px-3 py-1.5 text-xs text-[#e8e0c9] rounded-md flex items-center border border-[#e8e0c9]/30 shadow-md`}
+          onClick={locationPermissionState !== 'granted' ? requestLocationPermission : undefined}
+          style={locationPermissionState !== 'granted' ? {cursor: 'pointer'} : {}}
+        >
+          {getGpsStatusIndicator()}
+          <span>{getGpsStatusText()}</span>
+        </div>
       </div>
       
       {/* Distance meter and directional hint - moved away from bottom for mobile */}

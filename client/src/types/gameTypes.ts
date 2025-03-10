@@ -1,3 +1,5 @@
+import { WeatherCondition } from '@/lib/weatherService';
+
 // Game types
 export type Screen = 'welcome' | 'game' | 'cutscene' | 'gameover' | 'debug';
 export type Difficulty = 'easy' | 'medium' | 'hard';
@@ -64,6 +66,7 @@ export type GameState = {
   discoveredSecrets: string[];
   difficulty: Difficulty;
   weatherEffects?: {
+    condition: 'clear' | 'clouds' | 'rain' | 'thunderstorm' | 'snow' | 'mist' | 'fog';
     sanityModifier: number;
     difficultyModifier: number;
     visibilityRange: number;
