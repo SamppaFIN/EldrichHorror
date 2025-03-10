@@ -4,6 +4,7 @@ import MapComponent from '@/components/map/MapComponent';
 import { GameOverlays, ProgressBar, PixelButton, ChoiceButton, InventoryItem, SanityEffect, DebugButton } from '@/components/GameComponents';
 import { LocationType, StoryChoice } from '@/types/gameTypes';
 import { Link } from 'wouter';
+import { InitAudio, PlaySound, StopSound, ResumeAudioContext } from '@/lib/audioUtils';
 
 const GameScreen = () => {
   const { 
@@ -28,6 +29,33 @@ const GameScreen = () => {
     locationPermissionState
   } = useGameContext();
 
+  // Initialize audio system on component mount
+  useEffect(() => {
+    // Initialize audio context on first user interaction
+    const initAudioOnInteraction = async () => {
+      InitAudio();
+      await ResumeAudioContext();
+      
+      // Play ambient background sound when game starts
+      PlaySound('ambient', '/sounds/ambient_lovecraft.mp3', true, 0.3);
+      
+      // Remove event listeners once audio is initialized
+      document.removeEventListener('click', initAudioOnInteraction);
+      document.removeEventListener('touchstart', initAudioOnInteraction);
+    };
+    
+    // Add event listeners for user interaction to initialize audio
+    document.addEventListener('click', initAudioOnInteraction, { once: true });
+    document.addEventListener('touchstart', initAudioOnInteraction, { once: true });
+    
+    // Clean up on component unmount
+    return () => {
+      document.removeEventListener('click', initAudioOnInteraction);
+      document.removeEventListener('touchstart', initAudioOnInteraction);
+      StopSound('ambient');
+    };
+  }, []);
+  
   // Game Effects - Low sanity visualization
   useEffect(() => {
     const body = document.querySelector('body');
