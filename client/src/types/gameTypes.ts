@@ -63,6 +63,13 @@ export type GameState = {
   visitedLocations: string[];
   discoveredSecrets: string[];
   difficulty: Difficulty;
+  weatherEffects?: {
+    sanityModifier: number;
+    difficultyModifier: number;
+    visibilityRange: number;
+    narrativeModifier: string;
+    audioModifier: number;
+  };
 };
 
 export type HighScore = {

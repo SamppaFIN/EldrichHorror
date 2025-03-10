@@ -3,8 +3,9 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { queryClient, apiRequest } from '@/lib/queryClient';
 import { useGeolocation } from '@/hooks/useGeolocation';
 import { calculateDistance } from '@/lib/locationUtils';
-import { PlaySound, StopSound } from '@/lib/audioUtils';
+import { PlaySound, StopSound, ApplySanityAudioEffects } from '@/lib/audioUtils';
 import { useToast } from '@/hooks/use-toast';
+import { getWeatherEffects } from '@/lib/weatherService';
 import {
   GameState,
   Screen,
@@ -261,6 +262,34 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       setCurrentNarrative(`${stageInfo.narrative} ${stageInfo.objective}`);
     }
   }, [gameState.stage]);
+
+  // Fetch and update weather effects
+  useEffect(() => {
+    const updateWeatherEffects = async () => {
+      if (playerPosition && gameState.screen === 'game') {
+        const effects = await getWeatherEffects(playerPosition.lat, playerPosition.lng);
+        if (effects) {
+          setGameState(prev => ({ ...prev, weatherEffects: effects }));
+          
+          // Apply audio effects based on sanity and weather
+          const audioModifier = effects.audioModifier || 1;
+          ApplySanityAudioEffects(sanityMeterValue * audioModifier);
+          
+          // Show weather effect notification
+          toast({
+            title: "Weather Changes",
+            description: effects.narrativeModifier,
+          });
+        }
+      }
+    };
+
+    // Update weather every 5 minutes
+    updateWeatherEffects();
+    const interval = setInterval(updateWeatherEffects, 5 * 60 * 1000);
+    
+    return () => clearInterval(interval);
+  }, [playerPosition, gameState.screen]);
   
   // Mutation for saving highscore
   const { mutate: saveHighScore } = useMutation({
@@ -441,15 +470,31 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   };
   
   const makeChoice = (choice: StoryChoice) => {
-    // Apply consequences to health or sanity
+    // Apply consequences to health or sanity with weather effects
+    const weatherEffects = gameState.weatherEffects || {
+      sanityModifier: 1,
+      difficultyModifier: 1,
+      visibilityRange: 1,
+      narrativeModifier: '',
+      audioModifier: 1
+    };
+
+    const modifiedCost = Math.ceil(choice.cost * weatherEffects.difficultyModifier);
+    
     if (choice.affects === 'health') {
-      setGameState(prev => ({ ...prev, health: Math.max(0, prev.health - choice.cost) }));
+      setGameState(prev => ({ ...prev, health: Math.max(0, prev.health - modifiedCost) }));
     } else {
-      setGameState(prev => ({ ...prev, sanity: Math.max(0, prev.sanity - choice.cost) }));
+      const sanityCost = Math.ceil(modifiedCost * weatherEffects.sanityModifier);
+      setGameState(prev => ({ ...prev, sanity: Math.max(0, prev.sanity - sanityCost) }));
+      
+      // Apply updated audio effects
+      ApplySanityAudioEffects(Math.max(0, gameState.sanity - sanityCost));
     }
     
-    // Update narrative with outcome
-    setCurrentNarrative(choice.outcomeText);
+    // Update narrative with outcome and weather effects
+    const weatherNarrative = weatherEffects.narrativeModifier ? 
+      `\n\n${weatherEffects.narrativeModifier}` : '';
+    setCurrentNarrative(choice.outcomeText + weatherNarrative);
     
     // Hide choices
     setIsChoicesShown(false);
