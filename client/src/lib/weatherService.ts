@@ -19,6 +19,7 @@ export type WeatherData = {
 };
 
 export type WeatherEffects = {
+  condition: WeatherCondition;  // Current weather condition
   sanityModifier: number;       // Affects sanity drain rate
   difficultyModifier: number;   // Affects overall difficulty
   visibilityRange: number;      // Affects map visibility
@@ -39,6 +40,7 @@ const mapWeatherCondition = (openWeatherCode: string): WeatherCondition => {
 
 const calculateWeatherEffects = (weather: WeatherData): WeatherEffects => {
   const baseEffects: WeatherEffects = {
+    condition: 'clear',
     sanityModifier: 1,
     difficultyModifier: 1,
     visibilityRange: 1,
@@ -50,6 +52,7 @@ const calculateWeatherEffects = (weather: WeatherData): WeatherEffects => {
   switch (weather.condition) {
     case 'thunderstorm':
       return {
+        condition: weather.condition,
         sanityModifier: 1.5,      // Increased sanity drain
         difficultyModifier: 1.3,  // Harder to navigate
         visibilityRange: 0.6,     // Reduced visibility
@@ -58,6 +61,7 @@ const calculateWeatherEffects = (weather: WeatherData): WeatherEffects => {
       };
     case 'rain':
       return {
+        condition: weather.condition,
         sanityModifier: 1.2,
         difficultyModifier: 1.2,
         visibilityRange: 0.7,
@@ -66,6 +70,7 @@ const calculateWeatherEffects = (weather: WeatherData): WeatherEffects => {
       };
     case 'snow':
       return {
+        condition: weather.condition,
         sanityModifier: 1.1,
         difficultyModifier: 1.4,
         visibilityRange: 0.5,
@@ -75,6 +80,7 @@ const calculateWeatherEffects = (weather: WeatherData): WeatherEffects => {
     case 'fog':
     case 'mist':
       return {
+        condition: weather.condition,
         sanityModifier: 1.3,
         difficultyModifier: 1.5,
         visibilityRange: 0.4,
@@ -83,6 +89,7 @@ const calculateWeatherEffects = (weather: WeatherData): WeatherEffects => {
       };
     case 'clouds':
       return {
+        condition: weather.condition,
         sanityModifier: 1.1,
         difficultyModifier: 1.1,
         visibilityRange: 0.8,
@@ -128,11 +135,14 @@ export const getWeatherEffects = async (lat: number, lon: number): Promise<Weath
 
   // Apply time-of-day modifications
   if (weatherData.isNight) {
-    effects.sanityModifier *= 1.2;
-    effects.difficultyModifier *= 1.2;
-    effects.visibilityRange *= 0.7;
-    effects.audioModifier *= 1.2;
-    effects.narrativeModifier = 'The darkness amplifies ' + effects.narrativeModifier.toLowerCase();
+    return {
+      condition: effects.condition,
+      sanityModifier: effects.sanityModifier * 1.2,
+      difficultyModifier: effects.difficultyModifier * 1.2,
+      visibilityRange: effects.visibilityRange * 0.7,
+      audioModifier: effects.audioModifier * 1.2,
+      narrativeModifier: 'The darkness amplifies ' + effects.narrativeModifier.toLowerCase()
+    };
   }
 
   return effects;

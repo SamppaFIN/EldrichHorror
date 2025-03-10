@@ -66,7 +66,7 @@ export type GameState = {
   discoveredSecrets: string[];
   difficulty: Difficulty;
   weatherEffects?: {
-    condition: 'clear' | 'clouds' | 'rain' | 'thunderstorm' | 'snow' | 'mist' | 'fog';
+    condition: WeatherCondition;
     sanityModifier: number;
     difficultyModifier: number;
     visibilityRange: number;
