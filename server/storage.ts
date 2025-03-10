@@ -9,45 +9,59 @@ import {
 // Default game locations in Tampere, Finland
 const DEFAULT_LOCATIONS: InsertLocation[] = [
   {
-    id: "ancient_map",
-    name: "Ancient Map Discovery",
+    id: "start_tavern",
+    name: "The Beginning",
     type: "story",
-    latitude: "61.47422624340799",
-    longitude: "23.727072093722093",
+    latitude: "61.47288226220107",
+    longitude: "23.726044568064356",
     radius: 50,
     stage: "start",
-    narrative: "As you explore the area, a glint of something metallic catches your eye. You dig through the soil to uncover an old metal container. Inside, you find a weathered map of Tampere with strange markings. The parchment feels unnaturally cold to the touch, and the ink seems to shimmer slightly in the light. The markings appear to be in some ancient language, but as you trace your fingers over them, whispered words fill your mind. The map reveals two locations of particular interest, marked with symbols that burn themselves into your memory."
+    narrative: "You stagger out of the tavern, the air heavy with a vile, unspeakable miasma that clogs your lungs like a festering shroud of despair. As you paw through your belongings, your trembling fingers graze a brittle, wretched scrap of parchment—older than sin, and twice as cursed. The ink writhes like a nest of dying worms, twisting into shapes that defy reason and mock your feeble attempts to read them. This is no mere map; it's a sinister enigma that gnaws at your soul with icy dread. How it slithered into your possession is a riddle wrapped in a nightmare—as if it clawed its way from some godforsaken abyss, whispering your name with a grin full of jagged teeth."
   },
   {
-    id: "first_stage_point",
-    name: "Mysterious Shrine",
+    id: "lake_stage1",
+    name: "The Lake",
     type: "story",
-    latitude: "61.47582680415461",
-    longitude: "23.723975072631173", 
-    radius: 50,
-    stage: "start",
-    narrative: "The map leads you to what appears to be an ancient shrine hidden among the trees. The stone structure is covered in moss and strange symbols that match those on your map. You feel a strange buzzing sensation at the base of your skull as you approach."
-  },
-  {
-    id: "first_secret_point",
-    name: "Hidden Artifacts",
-    type: "secret",
-    latitude: "61.475960400531555",
-    longitude: "23.72449172100575",
-    radius: 30,
-    stage: "start",
-    itemId: "ancient_relic",
-    narrative: "Behind the shrine, partially buried beneath roots and soil, you discover a small stone box. Inside is an artifact of unknown origin - a small figurine carved from some black stone that seems to absorb light. It depicts a creature with too many limbs and features that don't quite make sense to the human eye."
-  },
-  {
-    id: "pyynikki_tower",
-    name: "Pyynikki Observation Tower",
-    type: "story",
-    latitude: "61.4954",
-    longitude: "23.7271",
+    latitude: "61.47587935136278",
+    longitude: "23.72405562866823", 
     radius: 50,
     stage: "1",
-    narrative: "At the top of the historic Pyynikki Observation Tower, you find a weathered journal hidden behind a loose panel. It contains bizarre sketches of the nearby lake Näsijärvi and references to 'ancient dwellers beneath the dark waters' and strange sounds from Tammerkoski rapids."
+    narrative: "At last, you stumble upon the spot etched into that accursed map—a place of twisted, unnatural beauty, where gnarled trees loom like grim sentinels, guarding a lake so dark and still it might as well be a mirror to hell. The air hangs thick, heavy with a stench that prickles your nostrils, and a shiver claws its way down your spine as a sickly green mist oozes from the lake's surface, curling and slithering like it's plotting your demise with every tendril. A suffocating dread coils around your chest, and you can't shake the feeling that something ancient—older than the trees, older than the dirt beneath your boots—is sizing you up with unseen, pitiless eyes. Then, out of nowhere, a sharp crack rips through the silence, reverberating in the oppressive air like a skull splitting open on a butcher's block. Heart hammering like a trapped rat, you whirl around, a cold pool of terror sloshing in your gut."
+  },
+  {
+    id: "lake_stage1_part2",
+    name: "The Burning Tree",
+    type: "story",
+    latitude: "61.47587935136278",
+    longitude: "23.72405562866823", 
+    radius: 50,
+    stage: "1",
+    narrative: "Before you stands an ancient tree, its gnarled branches engulfed in strange, otherworldly flames that dance in shades of sickly green and pale blue. As the fire consumes it, a ghastly sound fills the air—a low, haunting wail that rises and falls, an agonized keening as if the very soul of the tree were crying out in torment. The sound burrows into your mind, clawing at your sanity with each ghostly note. A cold dread roots you in place, yet a dark curiosity tugs at you. Do you dare draw closer to this wretched spectacle, or do you flee, abandoning the anguished sentinel to its fiery fate?"
+  },
+  {
+    id: "secret_trinket",
+    name: "The Trinket",
+    type: "secret",
+    latitude: "61.47587380330282",
+    longitude: "23.724338540905865",
+    radius: 30,
+    stage: "1",
+    itemId: "mysterious_trinket",
+    narrative: "As you claw your way up the slick, muddy incline from the lake's festering edge, your foot skids, nearly sending you tumbling back into the mire. But then, something catches your eye—a faint gleam in the sludge, a small, glinting trinket winking up at you, practically begging to be noticed. It's oddly mesmerizing, like it was planted there by some sly, invisible bastard with a sick sense of humor. Without a second thought, your grubby fingers snatch it up, closing around its cold metal surface. A heartbeat later, your senses snap into focus, the fog clouding your mind peeling back like a rotting curtain. But in its place, a queasy unease slithers in, coiling around your guts. Whatever this thing is, it feels wrong—like you've pocketed a curse that's already sizing up your soul for dinner."
+  },
+  {
+    id: "birds_cutscene",
+    name: "Strange Birds",
+    type: "cutscene",
+    latitude: "61.474013955184944",
+    longitude: "23.731024269600276",
+    radius: 50,
+    stage: "1",
+    cutsceneData: {
+      title: "Unnatural Patterns",
+      text: "The birds move strangely—flitting and wheeling in a pattern that defies the usual order of nature, as if gripped by some unseen dread. Their cries, usually bright and lively, are now twisted into shrill, discordant notes that scrape against your mind, each sound dragging your thoughts toward a lurking madness. An oppressive fear presses upon you, an echo of some nameless horror that only they can perceive.",
+      sanityEffect: -10
+    }
   },
   {
     id: "hidden_tome",
@@ -259,6 +273,8 @@ export class MemStorage implements IStorage {
     DEFAULT_LOCATIONS.forEach(location => {
       this.locations.set(location.id, {
         ...location,
+        narrative: location.narrative || null,
+        itemId: location.itemId || null,
         cutsceneData: location.cutsceneData || null
       });
     });
@@ -308,6 +324,8 @@ export class MemStorage implements IStorage {
   async createLocation(location: InsertLocation): Promise<Location> {
     const newLocation: Location = {
       ...location,
+      narrative: location.narrative || null,
+      itemId: location.itemId || null,
       cutsceneData: location.cutsceneData || null
     };
     this.locations.set(location.id, newLocation);

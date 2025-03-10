@@ -26,6 +26,35 @@ const DIFFICULTY_SETTINGS = {
   hard: { health: 60, sanity: 60 }
 };
 
+// Story choices for key locations
+const STORY_CHOICES: Record<string, StoryChoice[]> = {
+  'lake_stage1_part2': [
+    {
+      id: 'approach_tree',
+      title: 'Approach the Burning Tree',
+      description: 'Draw closer to examine the supernatural flames consuming the ancient tree.',
+      affects: 'sanity',
+      cost: 20,
+      outcomeText: "The bone-chilling wails claw at your skull, shredding the frayed edges of your sanity—a ghostly chorus so wretched it freezes the marrow in your bones. " + 
+        "As the sound burrows deeper, like maggots gnawing through your thoughts, the fog thickens, coiling around you with the greedy, skeletal fingers of some unseen, spiteful thing. " +
+        "Panic floods your veins like icy sludge as you realize it's creeping closer, rising with the slow, deliberate malice of a predator that knows you've got nowhere to run.",
+      nextLocationHint: "You have to escape—scramble to higher ground before this cursed mist decides to swallow you whole. Those hills you glimpsed earlier flicker in your rattled mind, distant but dangling a cruel tease of safety."
+    },
+    {
+      id: 'flee_tree',
+      title: 'Flee from the Burning Tree',
+      description: 'Turn away and escape from the horrific supernatural manifestation.',
+      affects: 'health',
+      cost: 15,
+      outcomeText: "You whip around, only to scream as the viridescent mist latches onto your flesh like a rabid leech. " + 
+        "It scorches your skin with the fetid breath of some infernal furnace, each lick melting tissue into oozing, raw sores that sting like a thousand tiny curses. " +
+        "Gasping, you lurch forward, clawing your way into a fleeting bubble of untainted air—sweet relief, if you can call it that when your arms look like they've been chewed by a plague wind.",
+      nextLocationHint: "Your eyes dart to the lake, where grotesque green clouds billow upward with the sluggish, predatory glee of a beast that's already tasted blood. " +
+        "A primal, gut-deep urge surges through you: get to higher ground, away from this flesh-eating blight."
+    }
+  ]
+};
+
 // Initial game state
 const initialGameState: GameState = {
   screen: 'welcome',

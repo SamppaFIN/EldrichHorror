@@ -1,0 +1,35 @@
+the Map:
+
+Start scene (The beginning): location: 61.47288226220107, 23.726044568064356
+You stagger out of the tavern, the air heavy with a vile, unspeakable miasma that clogs your lungs like a festering shroud of despair. 
+As you paw through your belongings, your trembling fingers graze a brittle, wretched scrap of parchment—older than sin, and twice as cursed. 
+The ink writhes like a nest of dying worms, twisting into shapes that defy reason and mock your feeble attempts to read them. 
+This is no mere map; it’s a sinister enigma that gnaws at your soul with icy dread. How it slithered into your possession is a riddle wrapped in a nightmare—as if it clawed its way from some godforsaken abyss, whispering your name with a grin full of jagged teeth.
+
+Stage 1 (the lake): Location: 61.47587935136278, 23.72405562866823
+At last, you stumble upon the spot etched into that accursed map—a place of twisted, unnatural beauty, where gnarled trees loom like grim sentinels, guarding a lake so dark and still it might as well be a mirror to hell. The air hangs thick, heavy with a stench that prickles your nostrils, and a shiver claws its way down your spine as a sickly green mist oozes from the lake’s surface, curling and slithering like it’s plotting your demise with every tendril.
+A suffocating dread coils around your chest, and you can’t shake the feeling that something ancient—older than the trees, older than the dirt beneath your boots—is sizing you up with unseen, pitiless eyes. Then, out of nowhere, a sharp crack rips through the silence, reverberating in the oppressive air like a skull splitting open on a butcher’s block. Heart hammering like a trapped rat, you whirl around, a cold pool of terror sloshing in your gut.
+
+action: after user presses continue
+Stage 1 Part 2 : 
+
+Before you stands an ancient tree, its gnarled branches engulfed in strange, otherworldly flames that dance in shades of sickly green and pale blue. As the fire consumes it, a ghastly sound fills the air—a low, haunting wail that rises and falls, an agonized keening as if the very soul of the tree were crying out in torment. The sound burrows into your mind, clawing at your sanity with each ghostly note.
+A cold dread roots you in place, yet a dark curiosity tugs at you. Do you dare draw closer to this wretched spectacle, or do you flee, abandoning the anguished sentinel to its fiery fate? (Sanity loss)
+
+action yes: Big Sanity minus
+The bone-chilling wails claw at your skull, shredding the frayed edges of your sanity—a ghostly chorus so wretched it freezes the marrow in your bones. As the sound burrows deeper, like maggots gnawing through your thoughts, the fog thickens, coiling around you with the greedy, skeletal fingers of some unseen, spiteful thing. Panic floods your veins like icy sludge as you realize it’s creeping closer, rising with the slow, deliberate malice of a predator that knows you’ve got nowhere decent to run.
+You have to escape—scramble to higher ground before this cursed mist decides to swallow you whole. Those hills you glimpsed earlier flicker in your rattled mind, distant but dangling a cruel tease of safety. Maybe, just maybe, the fog’s grubby tendrils won’t stretch that far. Heart thudding like a war drum in a losing battle, you spin on your heels and bolt, driven by a terror so raw it’s practically chewing your nerves to ribbons. Time’s leaking away fast, and dawdling here feels like RSVP-ing to your own funeral.
+
+action no: Health minus
+You whip around, only to scream as the viridescent mist latches onto your flesh like a rabid leech. It scorches your skin with the fetid breath of some infernal furnace, each lick melting tissue into oozing, raw sores that sting like a thousand tiny curses. Gasping, you lurch forward, clawing your way into a fleeting bubble of untainted air—sweet relief, if you can call it that when your arms look like they’ve been chewed by a plague wind.
+Your eyes dart to the lake, where grotesque green clouds billow upward with the sluggish, predatory glee of a beast that’s already tasted blood. The mist gnaws at everything—stones twist into warped, mocking shapes, vegetation blackens and collapses into ash like it’s auditioning for the underworld, and the air itself hisses with a venomous spite. A primal, gut-deep urge surges through you: get to higher ground, away from this flesh-eating blight. Those hills you spotted earlier flash in your mind—distant, sure, but waving a faint, taunting promise of survival.
+Run to the hills. Run now, or let this nightmare stew you into a gibbering puddle of regret. 
+
+Secret 1 (the trinket): location: 61.47587380330282, 23.724338540905865
+As you claw your way up the slick, muddy incline from the lake’s festering edge, your foot skids, nearly sending you tumbling back into the mire. But then, something catches your eye—a faint gleam in the sludge, a small, glinting trinket winking up at you, practically begging to be noticed. It’s oddly mesmerizing, like it was planted there by some sly, invisible bastard with a sick sense of humor. Without a second thought, your grubby fingers snatch it up, closing around its icy, metallic shape, and you shove it into your pocket before your brain can scream bad idea.
+A heartbeat later, your senses snap into focus, the fog clouding your mind peeling back like a rotting curtain. But in its place, a queasy unease slithers in, coiling around your guts. Whatever this thing is, it feels wrong—like you’ve pocketed a curse that’s already sizing up your soul for dinner. No time to ponder, though—the hills loom ahead, dangling their promise of safety like a carrot on a stick. You grit your teeth and push onward, but a creeping dread gnaws at the back of your skull, whispering that you’ve just rolled out the welcome mat for something unspeakably nasty to tag along.
+
+cutscene 1 (Sanity minus): location: 61.474013955184944, 23.731024269600276
+The birds move strangely—flitting and wheeling in a pattern that defies the usual order of nature, as if gripped by some unseen dread. 
+Their cries, usually bright and lively, are now twisted into shrill, discordant notes that scrape against your mind, each sound dragging your thoughts toward a lurking madness. 
+An oppressive fear presses upon you, an echo of some nameless horror that only they can perceive
