@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useGameContext } from '@/context/GameContext';
 import { GameOverlays, DebugButton } from '@/components/GameComponents';
 import { Stage, LocationType } from '@/types/gameTypes';
+import { InitAudio, PlaySound, StopSound, ResumeAudioContext, ApplySanityAudioEffects } from '@/lib/audioUtils';
 
 const DebugScreen = () => {
   const { 
@@ -22,6 +23,32 @@ const DebugScreen = () => {
   
   const [simLat, setSimLat] = useState('40.7128');
   const [simLng, setSimLng] = useState('-74.0060');
+  
+  // Audio test states
+  const [testAudioVolume, setTestAudioVolume] = useState(0.5);
+  const [testSanityLevel, setTestSanityLevel] = useState(sanityMeterValue);
+  
+  // Initialize audio system when debug screen mounts
+  useEffect(() => {
+    const initAudio = async () => {
+      try {
+        InitAudio();
+        await ResumeAudioContext();
+        console.log('[DEBUG] Audio system initialized for testing');
+      } catch (err) {
+        console.warn('[DEBUG] Failed to initialize audio system:', err);
+      }
+    };
+    
+    initAudio();
+    
+    // Clean up when debug screen unmounts
+    return () => {
+      StopSound('test-ambient');
+      StopSound('test-effect');
+      StopSound('test-whisper');
+    };
+  }, []);
   
   // Filtered locations by type
   const storyPoints = gameLocations.filter(loc => loc.type === 'story');
@@ -229,6 +256,117 @@ const DebugScreen = () => {
             </div>
           </div>
           
+          {/* Audio Testing Section */}
+          <div className="control-section md:col-span-2">
+            <h3 className="font-interface text-lg mb-3">Audio Testing</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 bg-black/30 p-3 rounded border border-[#444]">
+              {/* Sanity Audio Effects */}
+              <div className="flex flex-col space-y-2">
+                <h4 className="font-interface text-sm mb-1">Sanity Audio Effects</h4>
+                <div className="flex items-center">
+                  <label className="font-interface text-xs w-28">Test Sanity Level:</label>
+                  <input 
+                    type="range" 
+                    min="0" 
+                    max="100" 
+                    value={testSanityLevel} 
+                    className="w-40 mr-2"
+                    onChange={(e) => {
+                      const value = parseInt(e.target.value, 10);
+                      setTestSanityLevel(value);
+                      // Apply audio effects directly (without changing game state)
+                      ApplySanityAudioEffects(value);
+                    }}
+                  />
+                  <span className="font-interface text-xs">{testSanityLevel}%</span>
+                </div>
+                <div className="flex space-x-2 mt-2">
+                  <DebugButton 
+                    onClick={async () => {
+                      await ResumeAudioContext();
+                      ApplySanityAudioEffects(testSanityLevel);
+                    }}
+                    className="text-xs"
+                  >
+                    Apply Effects
+                  </DebugButton>
+                  <DebugButton 
+                    onClick={() => {
+                      setTestSanityLevel(100);
+                      ApplySanityAudioEffects(100);
+                    }}
+                    className="text-xs"
+                  >
+                    Reset Effects
+                  </DebugButton>
+                </div>
+              </div>
+              
+              {/* Sound Testing */}
+              <div className="flex flex-col space-y-2">
+                <h4 className="font-interface text-sm mb-1">Test Sounds</h4>
+                <div className="flex items-center">
+                  <label className="font-interface text-xs w-28">Volume:</label>
+                  <input 
+                    type="range" 
+                    min="0" 
+                    max="1" 
+                    step="0.1"
+                    value={testAudioVolume} 
+                    className="w-40 mr-2"
+                    onChange={(e) => setTestAudioVolume(parseFloat(e.target.value))}
+                  />
+                  <span className="font-interface text-xs">{Math.round(testAudioVolume * 100)}%</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2 mt-2">
+                  <DebugButton 
+                    onClick={() => {
+                      ResumeAudioContext();
+                      PlaySound('test-ambient', 'https://freesound.org/data/previews/468/468407_8874611-lq.mp3', true, testAudioVolume);
+                    }}
+                    className="text-xs"
+                  >
+                    Play Ambient
+                  </DebugButton>
+                  <DebugButton 
+                    onClick={() => StopSound('test-ambient')}
+                    className="text-xs"
+                  >
+                    Stop Ambient
+                  </DebugButton>
+                  <DebugButton 
+                    onClick={() => {
+                      ResumeAudioContext();
+                      PlaySound('test-effect', 'https://freesound.org/data/previews/244/244954_4486188-lq.mp3', false, testAudioVolume);
+                    }}
+                    className="text-xs"
+                  >
+                    Play Effect
+                  </DebugButton>
+                  <DebugButton 
+                    onClick={() => {
+                      ResumeAudioContext();
+                      PlaySound('test-whisper', 'https://freesound.org/data/previews/336/336998_4939433-lq.mp3', false, testAudioVolume);
+                    }}
+                    className="text-xs"
+                  >
+                    Play Whisper
+                  </DebugButton>
+                </div>
+                <DebugButton 
+                  onClick={() => {
+                    StopSound('test-ambient');
+                    StopSound('test-effect');
+                    StopSound('test-whisper');
+                  }}
+                  className="text-xs mt-2"
+                >
+                  Stop All Sounds
+                </DebugButton>
+              </div>
+            </div>
+          </div>
+          
           {/* Log Section */}
           <div className="control-section md:col-span-2">
             <h3 className="font-interface text-lg mb-3">Game Log</h3>
@@ -241,6 +379,7 @@ const DebugScreen = () => {
               <div className="log-entry">[DEBUG] Inventory items: {gameState.inventoryItems.join(', ') || 'none'}</div>
               <div className="log-entry">[DEBUG] Visited locations: {gameState.visitedLocations.join(', ') || 'none'}</div>
               <div className="log-entry">[DEBUG] Discovered secrets: {gameState.discoveredSecrets.join(', ') || 'none'}</div>
+              <div className="log-entry">[DEBUG] Audio test controls active</div>
             </div>
           </div>
         </div>
