@@ -1,8 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { cn } from "@/lib/utils";
 
-// Visual Overlays
-export const GameOverlays = () => {
+// Visual Overlays - conditionally render for performance mode
+export const GameOverlays = ({ performanceMode = false }) => {
+  if (performanceMode) {
+    // Simple solid background in performance mode
+    return <div className="absolute top-0 left-0 w-full h-full bg-[#1a1a1a] opacity-20 pointer-events-none z-[100]"></div>;
+  }
+  
   return (
     <>
       <div className="absolute top-0 left-0 w-full h-full bg-[repeating-linear-gradient(rgba(0,0,0,0.1),rgba(0,0,0,0.1)_1px,transparent_1px,transparent_2px)] pointer-events-none z-[100] opacity-30"></div>
@@ -12,24 +17,67 @@ export const GameOverlays = () => {
   );
 };
 
+// FPS Meter Component
+export const FPSMeter = () => {
+  const [fps, setFps] = useState<number>(0);
+  const frameRef = useRef<number>(0);
+  const lastTimeRef = useRef<number>(performance.now());
+  
+  useEffect(() => {
+    let animationFrameId: number;
+    
+    const updateFPS = () => {
+      frameRef.current++;
+      const now = performance.now();
+      const elapsed = now - lastTimeRef.current;
+      
+      if (elapsed >= 1000) {
+        setFps(Math.round((frameRef.current * 1000) / elapsed));
+        frameRef.current = 0;
+        lastTimeRef.current = now;
+      }
+      
+      animationFrameId = requestAnimationFrame(updateFPS);
+    };
+    
+    updateFPS();
+    
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, []);
+  
+  return (
+    <div className="fixed bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded-sm z-50">
+      {fps} FPS
+    </div>
+  );
+};
+
 // Progress Bars
 type ProgressBarProps = {
   type: 'health' | 'sanity';
   value: number;
+  performanceMode?: boolean;
 };
 
-export const ProgressBar = ({ type, value }: ProgressBarProps) => {
-  const fillClass = type === 'health' 
-    ? 'bg-gradient-to-r from-[#b71c1c] via-[#f57f17] to-[#2e7d32] bg-[length:200%_100%]'
-    : 'bg-gradient-to-r from-[#4a148c] via-[#6a1b9a] to-[#1565c0] bg-[length:200%_100%]';
+export const ProgressBar = ({ type, value, performanceMode = false }: ProgressBarProps) => {
+  // In performance mode, use solid colors instead of gradients
+  const fillClass = performanceMode
+    ? type === 'health' 
+      ? 'bg-red-600' 
+      : 'bg-purple-700'
+    : type === 'health' 
+      ? 'bg-gradient-to-r from-[#b71c1c] via-[#f57f17] to-[#2e7d32] bg-[length:200%_100%]'
+      : 'bg-gradient-to-r from-[#4a148c] via-[#6a1b9a] to-[#1565c0] bg-[length:200%_100%]';
   
   // Calculate background position based on value (100% - value to invert direction)
-  const bgPosition = `${100 - value}% 0`;
+  const bgPosition = performanceMode ? '0 0' : `${100 - value}% 0`;
   
   return (
-    <div className="relative h-5 w-full rounded overflow-hidden bg-black/30 shadow-[inset_0_0_5px_rgba(0,0,0,0.5)]">
+    <div className="relative h-4 w-full rounded overflow-hidden bg-black/30 shadow-[inset_0_0_5px_rgba(0,0,0,0.5)]">
       <div 
-        className={cn("h-full transition-all duration-300 ease-in-out", fillClass)} 
+        className={cn("h-full", performanceMode ? "" : "transition-all duration-300 ease-in-out", fillClass)} 
         style={{ 
           width: `${value}%`,
           backgroundPosition: bgPosition
@@ -46,6 +94,7 @@ type PixelButtonProps = {
   className?: string;
   disabled?: boolean;
   size?: 'sm' | 'md' | 'lg';
+  performanceMode?: boolean;
 };
 
 export const PixelButton = ({ 
@@ -53,20 +102,21 @@ export const PixelButton = ({
   onClick, 
   className, 
   disabled = false,
-  size = 'md'
+  size = 'md',
+  performanceMode = false
 }: PixelButtonProps) => {
   const sizeClasses = {
-    sm: 'px-3 py-2 text-sm',
-    md: 'px-5 py-2.5',
-    lg: 'px-6 py-3 text-xl'
+    sm: 'px-2 py-1 text-xs',
+    md: 'px-3 py-1.5 text-sm',
+    lg: 'px-4 py-2 text-base'
   };
 
   return (
     <button
       className={cn(
-        "font-header bg-[#1a3a3a] border-2 border-[#e8e0c9] text-[#e8e0c9] uppercase tracking-wider transition-all duration-200 relative overflow-hidden",
-        "hover:bg-[#2d1b2d] hover:-translate-y-0.5 hover:shadow-[0_5px_15px_rgba(0,0,0,0.3)]",
-        "active:translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none",
+        "font-header bg-[#1a3a3a] border-2 border-[#e8e0c9] text-[#e8e0c9] uppercase tracking-wider relative overflow-hidden",
+        !performanceMode && "transition-all duration-200 hover:bg-[#2d1b2d] hover:-translate-y-0.5 hover:shadow-[0_5px_15px_rgba(0,0,0,0.3)] active:translate-y-0.5",
+        disabled && "opacity-50 cursor-not-allowed",
         sizeClasses[size],
         className
       )}
@@ -84,21 +134,53 @@ type ChoiceButtonProps = {
   affects: 'health' | 'sanity';
   cost: number;
   onClick: () => void;
+  performanceMode?: boolean;
 };
 
-export const ChoiceButton = ({ title, description, affects, cost, onClick }: ChoiceButtonProps) => {
+export const ChoiceButton = ({ title, description, affects, cost, onClick, performanceMode = false }: ChoiceButtonProps) => {
+  const isHazardous = cost > 20;
+  const [isMobile, setIsMobile] = useState<boolean>(window.innerWidth < 768);
+  
+  // Check for mobile view
+  useEffect(() => {
+    const checkIfMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    window.addEventListener('resize', checkIfMobile);
+    checkIfMobile();
+    
+    return () => {
+      window.removeEventListener('resize', checkIfMobile);
+    };
+  }, []);
+  
   return (
-    <button
-      className="bg-[#2d1b2d]/80 border border-[#e8e0c9] p-3 text-left transition-all duration-300 relative overflow-hidden
-                hover:bg-[#1a3a3a]/90 hover:shadow-[0_0_15px_rgba(139,0,0,0.5)]
-                hover:after:content-[''] hover:after:absolute hover:after:inset-0 hover:after:bg-gradient-to-r hover:after:from-transparent hover:after:via-white/10 hover:after:to-transparent 
-                hover:after:animate-sheen"
+    <button 
+      className={`
+        w-full text-left rounded border px-2 py-1.5
+        ${affects === 'health' 
+          ? 'border-red-700/50 bg-red-900/30 hover:bg-red-900/50' 
+          : 'border-purple-700/50 bg-purple-900/30 hover:bg-purple-900/50'
+        }
+        ${performanceMode ? '' : 'backdrop-blur-sm transition-colors duration-200'}
+      `}
       onClick={onClick}
-      data-affects={affects}
-      data-cost={cost}
     >
-      <span className="font-bold block">{title}</span>
-      <span className="block text-sm opacity-80">{description} (Costs {affects === 'health' ? 'Health' : 'Sanity'})</span>
+      <div className="flex justify-between items-start mb-1">
+        <h4 className="font-header text-xs text-[#e8e0c9]">{title}</h4>
+        <span className={`
+          text-[10px] rounded-full px-1.5 py-0.5 
+          ${isHazardous ? 'bg-red-900/80 text-red-100' : 'bg-gray-800/70 text-gray-300'}
+          ${affects === 'health' ? 'border-red-700/50' : 'border-purple-700/50'}
+        `}>
+          {affects === 'health' ? 'HEALTH' : 'SANITY'} -{cost}
+        </span>
+      </div>
+      {/* Only show description in normal mode or if screen is large enough */}
+      {(!performanceMode || !isMobile) && (
+        <p className="text-[10px] text-[#e8e0c9]/90 italic">{description}</p>
+      )}
     </button>
   );
 };
@@ -107,18 +189,42 @@ type InventoryItemProps = {
   name: string;
   iconPath: string;
   discovered: boolean;
+  performanceMode?: boolean;
 };
 
-export const InventoryItem = ({ name, iconPath, discovered }: InventoryItemProps) => {
+export const InventoryItem = ({ name, iconPath, discovered, performanceMode = false }: InventoryItemProps) => {
   return (
-    <div className={cn(
-      "inventory-item p-2 aspect-square flex flex-col items-center justify-center", 
-      !discovered && "opacity-30"
-    )}>
-      <div className="w-10 h-10 flex items-center justify-center mb-1">
-        <span className="text-[#e8e0c9] w-8 h-8" dangerouslySetInnerHTML={{ __html: iconPath }} />
+    <div 
+      className={`
+        inventory-item p-1.5 rounded 
+        ${discovered 
+          ? 'bg-[#1a3a3a]/60 border border-[#e8e0c9]/40' 
+          : 'bg-[#1a1a1a]/40 border border-[#e8e0c9]/10'
+        }
+        ${performanceMode ? '' : 'transition-all duration-200 hover:bg-[#1a3a3a]/80'}
+      `}
+      title={name}
+    >
+      <div className="flex flex-col items-center justify-center">
+        <div 
+          className={`icon-container w-8 h-8 flex items-center justify-center
+            ${discovered 
+              ? 'text-[#e8e0c9]' 
+              : 'text-[#e8e0c9]/20'
+            }
+          `}
+          dangerouslySetInnerHTML={{ __html: iconPath }}
+        />
+        <div className={`
+          mt-1 text-[10px] text-center
+          ${discovered 
+            ? 'text-[#e8e0c9]' 
+            : 'text-[#e8e0c9]/20'
+          }
+        `}>
+          {discovered ? name : '???'}
+        </div>
       </div>
-      <span className="text-xs text-center">{name}</span>
     </div>
   );
 };
@@ -127,223 +233,39 @@ export const InventoryItem = ({ name, iconPath, discovered }: InventoryItemProps
 import { ApplySanityAudioEffects, ResumeAudioContext } from '@/lib/audioUtils';
 
 // Sanity Effect
-export const SanityEffect = ({ sanity }: { sanity: number }) => {
+export const SanityEffect = ({ sanity, performanceMode = false }: { sanity: number, performanceMode?: boolean }) => {
+  // Skip rendering entirely in performance mode for low sanity
+  if (performanceMode && sanity > 30) return null;
   
-  // Define sanity thresholds
-  const MILD_THRESHOLD = 60;
-  const MODERATE_THRESHOLD = 40;
-  const SEVERE_THRESHOLD = 20;
-  const CRITICAL_THRESHOLD = 10;
+  const intensity = Math.max(0, (100 - sanity) / 100);
   
-  // State for visual effects
-  const [vignette, setVignette] = useState<string>('');
-  const [blurAmount, setBlurAmount] = useState<string>('');
-  const [saturation, setSaturation] = useState<string>('');
-  const [pulseSpeed, setPulseSpeed] = useState<string>('');
-  const [hallucinations, setHallucinations] = useState<boolean>(false);
-  const [tiltEffect, setTiltEffect] = useState<boolean>(false);
-  const [hallucinationText, setHallucinationText] = useState<string[]>([]);
-  const [distortionEffect, setDistortionEffect] = useState<boolean>(false);
-  
-  // Random positions for hallucination elements
-  const [randomPositions, setRandomPositions] = useState<{top: string, left: string, rotate: string}[]>([]);
-  
-  // Creepy whispers that can appear at low sanity
-  const creepyWhispers = [
-    "they're watching",
-    "don't look behind you",
-    "it knows your name",
-    "the walls have eyes",
-    "the shadows move",
-    "they're coming",
-    "run while you can",
-    "there's no escape",
-    "it follows you",
-    "listen closely",
-    "something crawls",
-    "see it yet?",
-    "in your head",
-    "secrets below",
-    "ancient whispers"
-  ];
-  
-  // Resume audio context when component mounts
-  useEffect(() => {
-    const initAudio = async () => {
-      await ResumeAudioContext();
-    };
-    
-    initAudio();
-  }, []);
-  
-  // Update effects based on sanity level
-  useEffect(() => {
-    // Apply audio effects
-    ApplySanityAudioEffects(sanity);
-    
-    // Reset all effects
-    if (sanity > MILD_THRESHOLD) {
-      setVignette('');
-      setBlurAmount('');
-      setSaturation('');
-      setPulseSpeed('');
-      setHallucinations(false);
-      setTiltEffect(false);
-      setDistortionEffect(false);
-      return;
-    }
-    
-    // Apply mild effects (60-41%)
-    if (sanity <= MILD_THRESHOLD && sanity > MODERATE_THRESHOLD) {
-      setVignette('0 0 100px 40px rgba(74, 20, 140, 0.25) inset');
-      setBlurAmount('0px');
-      setSaturation('90%');
-      setPulseSpeed('animate-pulse-slow');
-      setHallucinations(false);
-      setTiltEffect(false);
-      setDistortionEffect(false);
-    }
-    
-    // Apply moderate effects (40-21%)
-    else if (sanity <= MODERATE_THRESHOLD && sanity > SEVERE_THRESHOLD) {
-      setVignette('0 0 120px 60px rgba(74, 20, 140, 0.4) inset');
-      setBlurAmount('0.5px');
-      setSaturation('70%');
-      setPulseSpeed('animate-pulse-medium');
-      setHallucinations(true);
-      setTiltEffect(false);
-      setDistortionEffect(false);
-      
-      // Generate random hallucination text at this level
-      const textCount = Math.floor((MODERATE_THRESHOLD - sanity) / 5) + 1; // 1-4 whispers
-      const newWhispers = Array(textCount).fill(0).map(() => 
-        creepyWhispers[Math.floor(Math.random() * creepyWhispers.length)]
-      );
-      setHallucinationText(newWhispers);
-      
-      // Generate random positions for hallucinations
-      generateRandomPositions(textCount);
-    }
-    
-    // Apply severe effects (20-11%)
-    else if (sanity <= SEVERE_THRESHOLD && sanity > CRITICAL_THRESHOLD) {
-      setVignette('0 0 140px 80px rgba(74, 20, 140, 0.6) inset');
-      setBlurAmount('1px');
-      setSaturation('50%');
-      setPulseSpeed('animate-pulse-fast');
-      setHallucinations(true);
-      setTiltEffect(true);
-      setDistortionEffect(false);
-      
-      // Generate more random hallucination text at this level
-      const textCount = Math.floor((SEVERE_THRESHOLD - sanity) / 3) + 3; // 3-6 whispers
-      const newWhispers = Array(textCount).fill(0).map(() => 
-        creepyWhispers[Math.floor(Math.random() * creepyWhispers.length)]
-      );
-      setHallucinationText(newWhispers);
-      
-      // Generate random positions for hallucinations
-      generateRandomPositions(textCount);
-    }
-    
-    // Apply critical effects (10-0%)
-    else if (sanity <= CRITICAL_THRESHOLD) {
-      setVignette('0 0 160px 100px rgba(74, 20, 140, 0.8) inset');
-      setBlurAmount('2px');
-      setSaturation('30%');
-      setPulseSpeed('animate-pulse-very-fast');
-      setHallucinations(true);
-      setTiltEffect(true);
-      setDistortionEffect(true);
-      
-      // Generate even more random hallucination text at this level
-      const textCount = Math.floor((CRITICAL_THRESHOLD - sanity) / 2) + 5; // 5-10 whispers
-      const newWhispers = Array(textCount).fill(0).map(() => 
-        creepyWhispers[Math.floor(Math.random() * creepyWhispers.length)]
-      );
-      setHallucinationText(newWhispers);
-      
-      // Generate random positions for hallucinations
-      generateRandomPositions(textCount);
-    }
-  }, [sanity, ApplySanityAudioEffects]);
-  
-  // Generate random positions for hallucination elements
-  const generateRandomPositions = (count: number) => {
-    const positions = [];
-    for (let i = 0; i < count; i++) {
-      positions.push({
-        top: `${Math.random() * 80 + 10}%`,
-        left: `${Math.random() * 80 + 10}%`,
-        rotate: `${Math.random() * 40 - 20}deg`
-      });
-    }
-    setRandomPositions(positions);
-  };
-  
-  // If no effects should be applied, return null
-  if (!vignette) return null;
-  
-  return (
-    <>
-      {/* Main filter overlay */}
+  // Simplified effect in performance mode
+  if (performanceMode) {
+    return (
       <div 
-        className={`fixed inset-0 pointer-events-none z-[103] ${pulseSpeed}`}
+        className="sanity-effect fixed inset-0 pointer-events-none z-40"
         style={{
-          boxShadow: vignette,
-          filter: `blur(${blurAmount}) saturate(${saturation})`,
-          backgroundImage: 'radial-gradient(circle, transparent 60%, rgba(74, 20, 140, 0.1) 100%)'
+          opacity: intensity * 0.4,
+          backgroundColor: 'rgba(0,0,0,0.5)',
         }}
       />
-      
-      {/* Screen tilt effect for severe conditions */}
-      {tiltEffect && (
-        <div 
-          className="fixed inset-0 pointer-events-none z-[102] animate-slow-tilt"
-          style={{
-            backgroundImage: 'linear-gradient(135deg, rgba(74, 20, 140, 0.1), transparent, rgba(74, 20, 140, 0.1))',
-          }}
-        />
-      )}
-      
-      {/* Visual distortion effect for critical sanity */}
-      {distortionEffect && (
-        <div 
-          className="fixed inset-0 pointer-events-none z-[101] animate-distortion"
-          style={{
-            backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.05\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\' opacity=\'0.1\'/%3E%3C/svg%3E")',
-            opacity: 0.15
-          }}
-        />
-      )}
-      
-      {/* Edge distortion effect for critical sanity */}
-      {distortionEffect && (
-        <div className="fixed inset-0 pointer-events-none z-[100]">
-          <div className="absolute top-0 left-0 w-full h-[10px] bg-purple-900/10 animate-warp-top"></div>
-          <div className="absolute bottom-0 left-0 w-full h-[10px] bg-purple-900/10 animate-warp-bottom"></div>
-          <div className="absolute top-0 left-0 h-full w-[10px] bg-purple-900/10 animate-warp-left"></div>
-          <div className="absolute top-0 right-0 h-full w-[10px] bg-purple-900/10 animate-warp-right"></div>
-        </div>
-      )}
-      
-      {/* Hallucination text */}
-      {hallucinations && hallucinationText.map((text, index) => (
-        <div 
-          key={index}
-          className="fixed pointer-events-none z-[104] text-[#4a148c] opacity-70 font-horror animate-fade-in-out"
-          style={{
-            top: randomPositions[index]?.top || '50%',
-            left: randomPositions[index]?.left || '50%',
-            transform: `translate(-50%, -50%) rotate(${randomPositions[index]?.rotate || '0deg'})`,
-            textShadow: '0 0 5px rgba(0, 0, 0, 0.7)',
-            fontSize: `${Math.random() * 1.5 + 1}rem`
-          }}
-        >
-          {text}
-        </div>
-      ))}
-    </>
+    );
+  }
+  
+  return (
+    <div 
+      className="sanity-effect fixed inset-0 pointer-events-none z-40"
+      style={{
+        opacity: intensity * 0.6,
+        background: `
+          radial-gradient(circle at center, rgba(0,0,0,0) 0%, rgba(0,0,0,0.8) 100%),
+          url('/images/sanity_texture.png')
+        `,
+        backgroundSize: '100% 100%, cover',
+        filter: `blur(${intensity * 3}px)`,
+        mixBlendMode: 'multiply'
+      }}
+    />
   );
 };
 
@@ -359,7 +281,7 @@ export const DebugButton = ({ children, onClick, className, disabled }: DebugBut
   return (
     <button
       className={cn(
-        "px-3 py-1 bg-[#1a3a3a] font-interface text-sm hover:bg-[#2d1b2d] transition-colors",
+        "px-2 py-1 bg-[#1a3a3a] font-interface text-xs hover:bg-[#2d1b2d] transition-colors",
         disabled && "opacity-50 cursor-not-allowed",
         className
       )}
@@ -367,6 +289,36 @@ export const DebugButton = ({ children, onClick, className, disabled }: DebugBut
       disabled={disabled}
     >
       {children}
+    </button>
+  );
+};
+
+// Map Toggle Button
+type MapToggleProps = {
+  isVisible: boolean;
+  onClick: () => void;
+  className?: string;
+};
+
+export const MapToggle = ({ isVisible, onClick, className }: MapToggleProps) => {
+  return (
+    <button
+      className={cn(
+        "text-[#e8e0c9] text-sm px-3 py-1.5 rounded border border-[#e8e0c9]/30 shadow-md flex items-center",
+        isVisible ? "bg-[#1a3a3a]" : "bg-[#2d1b2d]",
+        className
+      )}
+      onClick={onClick}
+      aria-label={isVisible ? "Hide Map" : "Show Map"}
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        {isVisible ? (
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 0 1 3 16.382V5.618a1 1 0 0 1 1.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0 0 21 18.382V7.618a1 1 0 0 0-.553-.894L15 4m0 13V4m0 0L9 7" />
+        ) : (
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 0 1 3 16.382V5.618a1 1 0 0 1 1.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0 0 21 18.382V7.618a1 1 0 0 0-.553-.894L15 4m0 13V4m0 0L9 7" />
+        )}
+      </svg>
+      {isVisible ? 'Hide Map' : 'Show Map'}
     </button>
   );
 };

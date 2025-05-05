@@ -5,6 +5,7 @@ import GameScreen from '@/components/screens/GameScreen';
 import GameOverScreen from '@/components/screens/GameOverScreen';
 import CutsceneScreen from '@/components/screens/CutsceneScreen';
 import DebugScreen from '@/components/screens/DebugScreen';
+import StartGameScreen from '@/components/screens/StartGameScreen';
 import { useToast } from '@/hooks/use-toast';
 import { ResumeAudioContext } from '@/lib/audioUtils';
 
@@ -85,6 +86,8 @@ const Home = () => {
         return <GameOverScreen />;
       case 'debug':
         return <DebugScreen />;
+      case 'startgame':
+        return <StartGameScreen />;
       default:
         return <WelcomeScreen />;
     }

@@ -9,14 +9,24 @@ import {
 // Default game locations in Tampere, Finland
 const DEFAULT_LOCATIONS: InsertLocation[] = [
   {
-    id: "start_tavern",
-    name: "The Beginning",
+    id: "ancient_map",
+    name: "Ancient Map",
     type: "story",
-    latitude: "61.47288226220107",
-    longitude: "23.726044568064356",
+    latitude: "61.47285420785464",
+    longitude: "23.72609861270144", 
     radius: 50,
     stage: "start",
-    narrative: "You stagger out of the tavern, the air heavy with a vile, unspeakable miasma that clogs your lungs like a festering shroud of despair. As you paw through your belongings, your trembling fingers graze a brittle, wretched scrap of parchment—older than sin, and twice as cursed. The ink writhes like a nest of dying worms, twisting into shapes that defy reason and mock your feeble attempts to read them. This is no mere map; it's a sinister enigma that gnaws at your soul with icy dread. How it slithered into your possession is a riddle wrapped in a nightmare—as if it clawed its way from some godforsaken abyss, whispering your name with a grin full of jagged teeth."
+    narrative: "As you stand before the weathered parchment, your eyes are drawn to a sinister pattern of ink—a map of Tampere, Finland, but twisted by strange markings that whisper forbidden knowledge. Each landmark is circled in dried, rust-colored pigment, connected by lines that form unnerving geometric patterns. The margins crawl with cramped notes in a frantic hand, occasionally descending into unreadable symbols that seem to dance at the edge of your vision. A chill settles into your bones as you realize this is no ordinary map—it's a guide to sites where the veil between worlds grows thin, where ancient things might once again stir. Making sense of this document may lead you down a path from which there is no return, but the compulsion to follow has already taken root in your mind."
+  },
+  {
+    id: "pilot_statue",
+    name: "The Pilot Statue",
+    type: "startgame",
+    latitude: "61.49312",
+    longitude: "23.76182", 
+    radius: 20,
+    stage: "start",
+    narrative: "Standing before you is the imposing bronze figure known as 'The Pilot', casting its vigilant gaze across Sorin Aukio. As you approach this metallic sentinel, a strange energy seems to pulse from within it—a resonance that goes beyond the physical world. The statue's eyes, though cold metal, appear to track your movements with uncanny awareness. Ancient symbols, invisible to casual observers, briefly flash across its surface when touched by moonlight. You sense that this is more than a mere memorial; it is a gateway—a test of worthiness that demands to be overcome before your journey can truly begin."
   },
   {
     id: "lake_stage1",
@@ -47,7 +57,7 @@ const DEFAULT_LOCATIONS: InsertLocation[] = [
     radius: 30,
     stage: "1",
     itemId: "mysterious_trinket",
-    narrative: "As you claw your way up the slick, muddy incline from the lake's festering edge, your foot skids, nearly sending you tumbling back into the mire. But then, something catches your eye—a faint gleam in the sludge, a small, glinting trinket winking up at you, practically begging to be noticed. It's oddly mesmerizing, like it was planted there by some sly, invisible bastard with a sick sense of humor. Without a second thought, your grubby fingers snatch it up, closing around its cold metal surface. A heartbeat later, your senses snap into focus, the fog clouding your mind peeling back like a rotting curtain. But in its place, a queasy unease slithers in, coiling around your guts. Whatever this thing is, it feels wrong—like you've pocketed a curse that's already sizing up your soul for dinner."
+    narrative: "As you claw your way up the slick, muddy incline from the lake's festering edge, your foot skids, nearly sending you tumbling back into the mire. But then, something catches your eye—a faint gleam in the sludge, a small, glinting trinket winking up at you, practically begging to be noticed. It's oddly mesmerizing, like it was planted there by some sly, invisible bastard with a sick sense of humor. Without a second thought, your grubby fingers snatched it up, closing around its cold metal surface. A heartbeat later, your senses snapped into focus, the fog clouding your mind peeling back like a rotting curtain. But in its place, a queasy unease slithers in, coiling around your guts. Whatever this thing is, it feels wrong—like you've pocketed a curse that's already sizing up your soul for dinner."
   },
   {
     id: "birds_cutscene",
@@ -59,7 +69,7 @@ const DEFAULT_LOCATIONS: InsertLocation[] = [
     stage: "1",
     cutsceneData: {
       title: "Unnatural Patterns",
-      text: "The birds move strangely—flitting and wheeling in a pattern that defies the usual order of nature, as if gripped by some unseen dread. Their cries, usually bright and lively, are now twisted into shrill, discordant notes that scrape against your mind, each sound dragging your thoughts toward a lurking madness. An oppressive fear presses upon you, an echo of some nameless horror that only they can perceive.",
+      text: "The birds move strangely—flitting and wheeling in a pattern that defies the usual order of nature, as if gripped by some unseen dread. Their cries, usually bright and lively, are now twisted into shrill, discordant notes that scraped against your mind, each sound dragging your thoughts toward a lurking madness. An oppressive fear pressed upon you, an echo of some nameless horror that only they could perceive.",
       sanityEffect: -10
     }
   },
@@ -72,7 +82,7 @@ const DEFAULT_LOCATIONS: InsertLocation[] = [
     radius: 30,
     stage: "start",
     itemId: "wisdom",
-    narrative: "In a forgotten maintenance room of the observation tower, you discover a leather-bound tome written in archaic Finnish. The pages contain folk legends about water spirits and forest deities that predate Christianity in the region."
+    narrative: "In a forgotten maintenance room of the observation tower, you discovered a leather-bound tome written in archaic Finnish. The pages contained folk legends about water spirits and forest deities that predated Christianity in the region."
   },
   {
     id: "tampere_cathedral",
@@ -82,7 +92,7 @@ const DEFAULT_LOCATIONS: InsertLocation[] = [
     longitude: "23.7605",
     radius: 40,
     stage: "1",
-    narrative: "The normally serene Tampere Cathedral feels different today. You notice strange symbols etched into the woodwork, hidden among Hugo Simberg's famous frescoes. The 'Garden of Death' painting seems to move slightly when no one is looking directly at it."
+    narrative: "The normally serene Tampere Cathedral felt different today. You noticed strange symbols etched into the woodwork, hidden among Hugo Simberg's famous frescoes. The 'Garden of Death' painting seemed to move slightly when no one was looking directly at it."
   },
   {
     id: "strange_relic",
@@ -93,7 +103,7 @@ const DEFAULT_LOCATIONS: InsertLocation[] = [
     radius: 25,
     stage: "1",
     itemId: "relic",
-    narrative: "Hidden in a dark corner of the cathedral basement, you find a small stone carving that doesn't match the Christian imagery. It depicts a tentacled entity rising from lake waters. The stone feels unnaturally cold to the touch."
+    narrative: "Hidden in a dark corner of the cathedral basement, you found a small stone carving that didn't match the Christian imagery. It depicted a tentacled entity rising from lake waters. The stone felt unnaturally cold to the touch."
   },
   {
     id: "finlayson_area",
@@ -103,7 +113,7 @@ const DEFAULT_LOCATIONS: InsertLocation[] = [
     longitude: "23.7450",
     radius: 45,
     stage: "2",
-    narrative: "The historic factory buildings by Tammerkoski rapids hide a network of tunnels beneath. Old factory workers' journals speak of strange sounds from below the water and mysterious disappearances during the industrial revolution."
+    narrative: "The historic factory buildings by Tammerkoski rapids hid a network of tunnels beneath. Old factory workers' journals spoke of strange sounds from below the water and mysterious disappearances during the industrial revolution."
   },
   {
     id: "ancient_key",
@@ -114,7 +124,7 @@ const DEFAULT_LOCATIONS: InsertLocation[] = [
     radius: 30,
     stage: "2",
     itemId: "key",
-    narrative: "In a rusted old locker, you find an ornate brass key with tentacle-like protrusions. Inscribed with symbols similar to those you've seen before, it feels heavy with dread significance."
+    narrative: "In a rusted old locker, you found an ornate brass key with tentacle-like protrusions. Inscribed with symbols similar to those you've seen before, it felt heavy with dread significance."
   },
   {
     id: "underground_tunnels",
@@ -124,7 +134,7 @@ const DEFAULT_LOCATIONS: InsertLocation[] = [
     longitude: "23.7590",
     radius: 40,
     stage: "3",
-    narrative: "The underground tunnels near Tammerkoski are illuminated by strange bioluminescent growths. Ancient stone carvings depict human-like figures transforming into aquatic creatures. The rushing water seems to carry whispers in an unknown language."
+    narrative: "The underground tunnels near Tammerkoski were illuminated by strange bioluminescent growths. Ancient stone carvings depicted human-like figures transforming into aquatic creatures. The rushing water seemed to carry whispers in an unknown language."
   },
   {
     id: "ritual_chamber",
@@ -134,7 +144,7 @@ const DEFAULT_LOCATIONS: InsertLocation[] = [
     longitude: "23.7610",
     radius: 40,
     stage: "final",
-    narrative: "A vast chamber opens beneath the city, predating human settlement. Robed figures perform an ancient ritual around a pool that seems to drop endlessly into darkness. The walls are carved with scenes of cosmic entities and human supplication."
+    narrative: "A vast chamber opened beneath the city, predating human settlement. Robed figures performed an ancient ritual around a pool that seemed to drop endlessly into darkness. The walls were carved with scenes of cosmic entities and human supplication."
   },
   {
     id: "entity_vision",
@@ -147,8 +157,8 @@ const DEFAULT_LOCATIONS: InsertLocation[] = [
     cutsceneData: {
       id: "lake_vision",
       title: "Visions from the Finnish Deep",
-      text: "Standing by the shore of Näsijärvi, the lake water becomes unnaturally still. Your reflection distorts, replaced by visions of an ancient time when strange beings rose from the waters to interact with early Finnish settlers.",
-      additionalText: "The visions show rituals performed on these shores for centuries, and how the entities beneath the lake influenced Finnish mythology. You realize with horror that the tales of 'Näkki' water spirits were based on real encounters."
+      text: "Standing by the shore of Näsijärvi, the lake water became unnaturally still. Your reflection distorted, replaced by visions of an ancient time when strange beings rose from the waters to interact with early Finnish settlers.",
+      additionalText: "The visions showed rituals performed on these shores for centuries, and how the entities beneath the lake influenced Finnish mythology. You realized with horror that the tales of 'Näkki' water spirits were based on real encounters."
     }
   },
   {
@@ -162,8 +172,8 @@ const DEFAULT_LOCATIONS: InsertLocation[] = [
     cutsceneData: {
       id: "cosmic_horror",
       title: "Horror from Cosmic Depths",
-      text: "The ritual reaches its peak as the pool's water parts to reveal something ancient rising from below. Your mind struggles to comprehend the vast, alien form - a mass of scales, eyes, and appendages that should not exist in our reality.",
-      additionalText: "As your sanity threatens to break, you understand that Finnish folklore wasn't metaphorical. The entities venerated as nature deities by ancient Finns were glimpses of cosmic beings that existed long before humans and will remain long after our civilization ends."
+      text: "The ritual reached its peak as the pool's water parted to reveal something ancient rising from below. Your mind struggled to comprehend the vast, alien form - a mass of scales, eyes, and appendages that should not exist in our reality.",
+      additionalText: "As your sanity threatened to break, you understood that Finnish folklore wasn't metaphorical. The entities venerated as nature deities by ancient Finns were glimpses of cosmic beings that existed long before humans and would remain long after our civilization ends."
     }
   }
 ];
@@ -175,17 +185,17 @@ const DEFAULT_BLOG_POSTS: InsertBlogPost[] = [
     content: `
 <h2>Whispers from the Past: Tampere's Eldritch History</h2>
 
-<p>Deep in the archives of Tampere's oldest library, documents speak of strange phenomena that occurred around the city's lakes and forests centuries ago. Before industrialization transformed Tampere into Finland's manufacturing center, the region was known for unexplained disappearances and peculiar folklore.</p>
+<p>Deep in the archives of Tampere's oldest library, documents spoke of strange phenomena that occurred around the city's lakes and forests centuries ago. Before industrialization transformed Tampere into Finland's manufacturing center, the region was known for unexplained disappearances and peculiar folklore.</p>
 
 <p>In 1789, a series of journals from local residents described "lights dancing beneath the waters of Näsijärvi" and "voices that spoke in unknown tongues from the mist." These accounts coincided with unusually cold summers and reports of "shadowy figures" seen at the edges of forests.</p>
 
-<p>The most intriguing account comes from Reverend Mikael Särkilahti, who documented his encounter with what he described as "ancient stone formations bearing symbols not made by human hands" discovered in what is now Pyynikki Ridge. His drawings of these symbols bear striking resemblance to pictographs found in much older civilizations across Northern Europe.</p>
+<p>The most intriguing account came from Reverend Mikael Särkilahti, who documented his encounter with what he described as "ancient stone formations bearing symbols not made by human hands" discovered in what is now Pyynikki Ridge. His drawings of these symbols bore striking resemblance to pictographs found in much older civilizations across Northern Europe.</p>
 
 <p>Perhaps most disturbing was his final entry: "The symbols speak to those who listen. They tell of Those Who Wait Below, ancient entities that sleep beneath the waters and earth, dreaming of their return. I fear I have learned too much, and now they know my thoughts."</p>
 
 <p>Reverend Särkilahti disappeared shortly after this entry, and local authorities attributed his disappearance to drowning, though his body was never recovered.</p>
 
-<p>As you explore Tampere's landmarks during your adventure, remember that the boundaries between our world and others may be thinner in certain places, especially those marked on ancient maps...</p>
+<p>As you explored Tampere's landmarks during your adventure, remember that the boundaries between our world and others may be thinner in certain places, especially those marked on ancient maps...</p>
 `,
     author: "Professor H. Armitage",
     summary: "Exploring the mysterious historical accounts of strange phenomena in Tampere, Finland before industrialization transformed the region."
@@ -195,7 +205,7 @@ const DEFAULT_BLOG_POSTS: InsertBlogPost[] = [
     content: `
 <h2>The Algorithm That Glimpsed Between Worlds</h2>
 
-<p>In the sterile corridors of Quantum Computing Research Division, few spoke of Dr. Elena Karishov's final project. Official records indicate only equipment malfunction and data corruption, but those who worked closest to her whispered of something far more disturbing.</p>
+<p>In the sterile corridors of Quantum Computing Research Division, few spoke of Dr. Elena Karishov's final project. Official records indicated only equipment malfunction and data corruption, but those who worked closest to her whispered of something far more disturbing.</p>
 
 <p>Dr. Karishov had developed an algorithm designed to process multiple dimensional mathematics - calculations beyond conventional understanding. Her notes, partially redacted in official archives, spoke of "mathematical spaces where our reality's rules bend" and "computational gateways to realms governed by alien geometries."</p>
 

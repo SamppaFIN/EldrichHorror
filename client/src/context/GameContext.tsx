@@ -66,6 +66,7 @@ const initialGameState: GameState = {
   visitedLocations: [],
   discoveredSecrets: [],
   difficulty: 'medium',
+  performanceMode: false,
 };
 
 // Stage information
@@ -224,6 +225,7 @@ type GameContextType = {
   setHealth: (value: number) => void;
   setSanity: (value: number) => void;
   setStage: (stage: Stage) => void;
+  togglePerformanceMode: () => void;
   triggerLocation: (location: LocationType) => void;
   triggerStory: (locationId: string) => void;
   triggerSecret: (secretId: string) => void;
@@ -414,9 +416,27 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     setCurrentNarrative(`${STAGE_INFO[stage].narrative} ${STAGE_INFO[stage].objective}`);
   };
   
+  const togglePerformanceMode = () => {
+    setGameState(prev => ({ 
+      ...prev, 
+      performanceMode: !prev.performanceMode 
+    }));
+    
+    // Show toast notification
+    toast({
+      title: `Performance Mode ${gameState.performanceMode ? 'Disabled' : 'Enabled'}`,
+      description: gameState.performanceMode 
+        ? "Visual effects and features restored" 
+        : "Reduced visual effects for better performance",
+      duration: 3000
+    });
+  };
+  
   const triggerLocation = (location: LocationType) => {
-    // Don't trigger already visited locations (except cutscenes)
-    if (gameState.visitedLocations.includes(location.id) && location.type !== 'cutscene') {
+    // Don't trigger already visited locations (except cutscenes and startgame)
+    if (gameState.visitedLocations.includes(location.id) && 
+        location.type !== 'cutscene' && 
+        location.type !== 'startgame') {
       return;
     }
     
@@ -429,6 +449,9 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         break;
       case 'cutscene':
         triggerCutscene(location.id);
+        break;
+      case 'startgame':
+        triggerStartGame(location.id);
         break;
     }
   };
@@ -496,6 +519,18 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     // Set cutscene and switch to cutscene screen
     setCurrentCutscene(cutscene.cutscene);
     setGameState(prev => ({ ...prev, screen: 'cutscene' }));
+  };
+  
+  const triggerStartGame = (locationId: string) => {
+    // Find location details
+    const location = gameLocations.find(loc => loc.id === locationId);
+    if (!location) return;
+    
+    // Play a sound effect
+    PlaySound('effect', 'https://freesound.org/data/previews/399/399934_4921277-lq.mp3');
+    
+    // Switch to startgame screen
+    setGameState(prev => ({ ...prev, screen: 'startgame' }));
   };
   
   const makeChoice = (choice: StoryChoice) => {
@@ -632,6 +667,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       setHealth,
       setSanity,
       setStage,
+      togglePerformanceMode,
       triggerLocation,
       triggerStory,
       triggerSecret,

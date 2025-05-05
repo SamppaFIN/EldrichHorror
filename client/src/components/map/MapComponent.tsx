@@ -12,9 +12,15 @@ let L: any;
 
 type MapComponentProps = {
   onTriggerLocation?: (location: LocationType) => void;
+  performanceMode?: boolean;
+  updateInterval?: number;
 };
 
-const MapComponent = ({ onTriggerLocation }: MapComponentProps) => {
+const MapComponent = ({ 
+  onTriggerLocation, 
+  performanceMode = false,
+  updateInterval = 1000 
+}: MapComponentProps) => {
   const { gameState, playerPosition, gameLocations, locationPermissionState, requestLocationPermission } = useGameContext();
   const { accuracy } = useGeolocation();
   const mapRef = useRef<HTMLDivElement>(null);
@@ -30,6 +36,21 @@ const MapComponent = ({ onTriggerLocation }: MapComponentProps) => {
   const [distance, setDistance] = useState<number>(0);
   const [direction, setDirection] = useState<string>('');
   const [lastUpdateTime, setLastUpdateTime] = useState<string>('');
+  const [isMobile, setIsMobile] = useState<boolean>(window.innerWidth < 768);
+  
+  // Check for mobile view
+  useEffect(() => {
+    const checkIfMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    window.addEventListener('resize', checkIfMobile);
+    checkIfMobile();
+    
+    return () => {
+      window.removeEventListener('resize', checkIfMobile);
+    };
+  }, []);
   
   // Initialize Leaflet map when component mounts
   useEffect(() => {
@@ -44,22 +65,33 @@ const MapComponent = ({ onTriggerLocation }: MapComponentProps) => {
         const initialPosition = playerPosition || { lat: 61.47285420785464, lng: 23.72609861270144 };
         
         // Create map
-        mapInstanceRef.current = L.map(mapRef.current).setView(
+        mapInstanceRef.current = L.map(mapRef.current, {
+          zoomControl: !isMobile, // Disable zoom controls on mobile
+          attributionControl: !performanceMode, // Hide attribution in performance mode
+          fadeAnimation: !performanceMode,
+          markerZoomAnimation: !performanceMode,
+          zoom: isMobile ? 16 : 15, // Closer zoom on mobile
+        }).setView(
           [initialPosition.lat, initialPosition.lng], 
-          15
+          isMobile ? 16 : 15
         );
         
-        // Add dark theme map tiles
+        // Add dark theme map tiles with reduced detail in performance mode
         L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
           attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-          maxZoom: 19
+          maxZoom: performanceMode ? 17 : 19,
+          maxNativeZoom: performanceMode ? 16 : 19,
+          updateWhenIdle: performanceMode, // Only update when map is idle in performance mode
+          updateWhenZooming: !performanceMode, // Don't update while zooming in performance mode
         }).addTo(mapInstanceRef.current);
         
-        // Create player marker with enhanced pulsing effect
+        // Create player marker with simplified style in performance mode
         const playerIcon = L.divIcon({
           className: 'player-marker',
-          iconSize: [28, 28],
-          html: `<div class="w-[28px] h-[28px] rounded-full bg-[#e8e0c9] border-[4px] border-[#1565c0] 
+          iconSize: [24, 24], // Smaller size for better performance
+          html: performanceMode ? 
+            `<div class="w-[24px] h-[24px] rounded-full bg-[#1565c0] border-2 border-white"></div>` :
+            `<div class="w-[28px] h-[28px] rounded-full bg-[#e8e0c9] border-[4px] border-[#1565c0] 
                 shadow-[0_0_15px_rgba(21,101,192,0.9)] relative z-20">
                 <div class="absolute inset-0 rounded-full bg-[#1565c0] animate-ping opacity-70"></div>
                 <div class="absolute -inset-2 rounded-full border-4 border-[#1565c0]/30 animate-pulse"></div>
@@ -71,15 +103,15 @@ const MapComponent = ({ onTriggerLocation }: MapComponentProps) => {
           { icon: playerIcon }
         ).addTo(mapInstanceRef.current);
         
-        // Add enhanced accuracy circle around player (with 15m default radius)
+        // Add simplified accuracy circle in performance mode
         accuracyCircleRef.current = L.circle([initialPosition.lat, initialPosition.lng], {
           radius: 15,
           className: 'accuracy-circle',
-          fillOpacity: 0.15,
+          fillOpacity: performanceMode ? 0.1 : 0.15,
           fillColor: '#1565c0',
           color: '#1565c0',
-          weight: 2,
-          dashArray: '4,8'
+          weight: performanceMode ? 1 : 2,
+          dashArray: performanceMode ? null : '4,8'
         }).addTo(mapInstanceRef.current);
         
         // Add location markers
@@ -87,6 +119,12 @@ const MapComponent = ({ onTriggerLocation }: MapComponentProps) => {
         
         // Set initial update time
         setLastUpdateTime(new Date().toLocaleTimeString());
+        
+        // Disable dragging on mobile in performance mode to improve FPS
+        if (isMobile && performanceMode) {
+          mapInstanceRef.current.dragging.disable();
+          mapInstanceRef.current.touchZoom.disable();
+        }
       }
     };
     
@@ -99,74 +137,99 @@ const MapComponent = ({ onTriggerLocation }: MapComponentProps) => {
         mapInstanceRef.current = null;
       }
     };
-  }, []);
+  }, [performanceMode, isMobile]);
   
-  // Update player position on map
+  // Update map with less frequent intervals in performance mode
   useEffect(() => {
-    if (mapInstanceRef.current && playerMarkerRef.current && playerPosition) {
-      // Update player marker position with smooth animation
-      playerMarkerRef.current.setLatLng([playerPosition.lat, playerPosition.lng]);
-      
-      // Update accuracy circle with real accuracy data when available
-      if (accuracyCircleRef.current) {
-        // Update circle position
-        accuracyCircleRef.current.setLatLng([playerPosition.lat, playerPosition.lng]);
+    let updateTimer: number;
+    
+    const updateMap = () => {
+      if (mapInstanceRef.current && playerMarkerRef.current && playerPosition) {
+        // Update player marker position with no animation in performance mode
+        playerMarkerRef.current.setLatLng([playerPosition.lat, playerPosition.lng]);
         
-        // Update circle radius based on actual accuracy data (or use default)
-        const currentAccuracy = accuracy || 15; // Default to 15m if accuracy is null
-        accuracyCircleRef.current.setRadius(currentAccuracy);
-        
-        // Update circle styling based on accuracy
-        if (accuracy) {
-          // Better accuracy = more green
-          if (accuracy < 20) {
+        // Update accuracy circle
+        if (accuracyCircleRef.current) {
+          // Update circle position
+          accuracyCircleRef.current.setLatLng([playerPosition.lat, playerPosition.lng]);
+          
+          // Update circle radius based on actual accuracy data (or use default)
+          const currentAccuracy = accuracy || 15; // Default to 15m if accuracy is null
+          accuracyCircleRef.current.setRadius(currentAccuracy);
+          
+          // Simplified styling in performance mode
+          if (performanceMode) {
             accuracyCircleRef.current.setStyle({
-              fillColor: '#4CAF50', // Green for good accuracy
+              fillColor: '#4CAF50',
               color: '#4CAF50',
-              fillOpacity: 0.15,
-              weight: 2
-            });
-          } else if (accuracy < 50) {
-            accuracyCircleRef.current.setStyle({
-              fillColor: '#FFC107', // Yellow for medium accuracy
-              color: '#FFC107',
-              fillOpacity: 0.15,
-              weight: 2
+              fillOpacity: 0.1,
+              weight: 1
             });
           } else {
-            accuracyCircleRef.current.setStyle({
-              fillColor: '#F44336', // Red for poor accuracy
-              color: '#F44336',
-              fillOpacity: 0.15,
-              weight: 2
-            });
+            // Better accuracy = more green
+            if (accuracy) {
+              if (accuracy < 20) {
+                accuracyCircleRef.current.setStyle({
+                  fillColor: '#4CAF50', // Green for good accuracy
+                  color: '#4CAF50',
+                  fillOpacity: 0.15,
+                  weight: 2
+                });
+              } else if (accuracy < 50) {
+                accuracyCircleRef.current.setStyle({
+                  fillColor: '#FFC107', // Yellow for medium accuracy
+                  color: '#FFC107',
+                  fillOpacity: 0.15,
+                  weight: 2
+                });
+              } else {
+                accuracyCircleRef.current.setStyle({
+                  fillColor: '#F44336', // Red for poor accuracy
+                  color: '#F44336',
+                  fillOpacity: 0.15,
+                  weight: 2
+                });
+              }
+            }
           }
+        }
+        
+        // Always center map on player, but only animate in normal mode
+        mapInstanceRef.current.setView(
+          [playerPosition.lat, playerPosition.lng], 
+          mapInstanceRef.current.getZoom(), 
+          performanceMode ? { animate: false } : { animate: true, duration: 0.5, noMoveStart: true }
+        );
+        
+        // Record update time
+        const now = Date.now();
+        const timeSinceLastUpdate = now - lastPositionUpdateRef.current;
+        lastPositionUpdateRef.current = now;
+        
+        // Update last update time display
+        setLastUpdateTime(new Date().toLocaleTimeString());
+        
+        // Check for proximity triggers
+        checkProximityTriggers();
+        
+        // Only log in normal mode
+        if (!performanceMode) {
+          console.log(`Position updated at ${new Date().toLocaleTimeString()}, accuracy: ${accuracy}m, Δt: ${Math.round(timeSinceLastUpdate)}ms`);
         }
       }
       
-      // Always center map on player with smooth animation
-      mapInstanceRef.current.setView([playerPosition.lat, playerPosition.lng], 
-        mapInstanceRef.current.getZoom(), {
-        animate: true,
-        duration: 0.5,
-        noMoveStart: true
-      });
-      
-      // Record update time
-      const now = Date.now();
-      const timeSinceLastUpdate = now - lastPositionUpdateRef.current;
-      lastPositionUpdateRef.current = now;
-      
-      // Update last update time display
-      setLastUpdateTime(new Date().toLocaleTimeString());
-      
-      // Check for proximity triggers
-      checkProximityTriggers();
-      
-      // Log position update in console
-      console.log(`Position updated at ${new Date().toLocaleTimeString()}, accuracy: ${accuracy}m, Δt: ${Math.round(timeSinceLastUpdate)}ms`);
-    }
-  }, [playerPosition, accuracy]);
+      // Schedule next update with longer interval in performance mode
+      updateTimer = window.setTimeout(updateMap, updateInterval);
+    };
+    
+    // Start the update cycle
+    updateMap();
+    
+    // Cleanup
+    return () => {
+      window.clearTimeout(updateTimer);
+    };
+  }, [playerPosition, accuracy, performanceMode, updateInterval]);
   
   // Calculate direction between player and target
   const calculateDirection = (playerLat: number, playerLng: number, targetLat: number, targetLng: number): string => {
@@ -191,8 +254,12 @@ const MapComponent = ({ onTriggerLocation }: MapComponentProps) => {
     return directions[index];
   };
   
-  // Get a cryptic hint based on direction and distance
+  // Get a cryptic hint based on direction and distance - simplified in performance mode
   const getDirectionalHint = (direction: string, distance: number): string => {
+    if (performanceMode) {
+      return `${direction.toUpperCase()} ${Math.round(distance)}m`;
+    }
+    
     let distanceDescription = '';
     
     if (distance < 100) {
@@ -254,7 +321,7 @@ const MapComponent = ({ onTriggerLocation }: MapComponentProps) => {
     return `${directionHints[randomIndex]} (${distanceDescription}, ${Math.round(distance)} meters)`;
   };
   
-  // Add location markers to map
+  // Add location markers to map - simplified in performance mode
   const addLocationMarkers = () => {
     if (!mapInstanceRef.current || !L) return;
     
@@ -270,13 +337,16 @@ const MapComponent = ({ onTriggerLocation }: MapComponentProps) => {
         return; // Skip already visited locations except cutscenes
       }
       
-      // Create marker with appropriate icon
+      // Create marker with appropriate icon - simpler in performance mode
       const markerIcon = L.divIcon({
         className: `location-marker ${location.type}`,
-        iconSize: [20, 20],
-        html: `<div class="w-[20px] h-[20px] rounded-full border-2 border-[#e8e0c9] 
+        iconSize: [16, 16], // Smaller for better performance
+        html: performanceMode ? 
+          `<div class="w-[16px] h-[16px] rounded-full bg-[#1a3a3a] border border-[#e8e0c9]"></div>` :
+          `<div class="w-[20px] h-[20px] rounded-full border-2 border-[#e8e0c9] 
                ${location.type === 'story' ? 'bg-[#1a3a3a]/90' : 
                  location.type === 'secret' ? 'bg-[#2d1b2d]/90' : 
+                 location.type === 'startgame' ? 'bg-[#8b0000]/90' : 
                  'bg-[#8b0000]/90'} 
                flex items-center justify-center shadow-[0_0_10px_rgba(0,0,0,0.5)]">
                <div class="inner-marker"></div>
@@ -287,19 +357,32 @@ const MapComponent = ({ onTriggerLocation }: MapComponentProps) => {
         icon: markerIcon
       }).addTo(mapInstanceRef.current);
       
-      // Add radius circle
-      const circle = L.circle([location.lat, location.lng], {
-        radius: location.radius,
-        className: 'location-radius',
-        fillOpacity: 0,
-        color: location.type === 'story' ? '#1a3a3a' : 
-               location.type === 'secret' ? '#2d1b2d' : '#8b0000',
-        weight: 2,
-        dashArray: '5,10'
-      }).addTo(mapInstanceRef.current);
+      // Add radius circle - simpler in performance mode
+      const circleOptions = performanceMode ? 
+        {
+          radius: location.radius,
+          className: 'location-radius',
+          fillOpacity: 0,
+          color: '#1a3a3a',
+          weight: 1
+        } : 
+        {
+          radius: location.radius,
+          className: 'location-radius',
+          fillOpacity: 0,
+          color: location.type === 'story' ? '#1a3a3a' : 
+                location.type === 'secret' ? '#2d1b2d' : 
+                location.type === 'startgame' ? '#8b0000' : '#8b0000',
+          weight: 2,
+          dashArray: '5,10'
+        };
       
-      // Add popup with location information
-      marker.bindPopup(`<b>${location.name}</b><br>${location.type.charAt(0).toUpperCase() + location.type.slice(1)} Point`);
+      const circle = L.circle([location.lat, location.lng], circleOptions).addTo(mapInstanceRef.current);
+      
+      // Only add popups in normal mode and not on mobile
+      if (!performanceMode && !isMobile) {
+        marker.bindPopup(`<b>${location.name}</b><br>${location.type.charAt(0).toUpperCase() + location.type.slice(1)} Point`);
+      }
       
       // Add click handler for location selection
       marker.on('click', () => {
@@ -380,32 +463,19 @@ const MapComponent = ({ onTriggerLocation }: MapComponentProps) => {
     }
   }, [playerPosition, selectedLocation]);
 
-  // On component mount, try to set the initial location as the ancient map location
-  useEffect(() => {
-    if (gameLocations && gameLocations.length > 0 && playerPosition) {
-      const startLocation = gameLocations.find(loc => loc.id === 'ancient_map');
-      if (startLocation) {
-        setSelectedLocation(startLocation);
-        const dist = calculateDistance(
-          playerPosition.lat, 
-          playerPosition.lng, 
-          startLocation.lat, 
-          startLocation.lng
-        );
-        setDistance(dist);
-        const dir = calculateDirection(
-          playerPosition.lat, 
-          playerPosition.lng, 
-          startLocation.lat, 
-          startLocation.lng
-        );
-        setDirection(dir);
+  // Get GPS status indicator based on permission state - simplified in performance mode
+  const getGpsStatusIndicator = () => {
+    if (performanceMode) {
+      // Simple colored dot in performance mode
+      switch (locationPermissionState) {
+        case 'granted': return <div className="w-2 h-2 bg-green-500 rounded-full mr-1"></div>;
+        case 'denied': return <div className="w-2 h-2 bg-red-500 rounded-full mr-1"></div>;
+        case 'prompt': return <div className="w-2 h-2 bg-yellow-500 rounded-full mr-1"></div>;
+        default: return <div className="w-2 h-2 bg-gray-500 rounded-full mr-1"></div>;
       }
     }
-  }, [gameLocations?.length]);
-
-  // Get GPS status indicator based on permission state
-  const getGpsStatusIndicator = () => {
+    
+    // Full indicator in normal mode
     switch (locationPermissionState) {
       case 'granted':
         return (
@@ -426,8 +496,15 @@ const MapComponent = ({ onTriggerLocation }: MapComponentProps) => {
     }
   };
 
-  // Get GPS status text based on permission state
+  // Get GPS status text - simplified in performance mode
   const getGpsStatusText = () => {
+    if (performanceMode) {
+      // Simplified text in performance mode
+      if (!playerPosition) return "GPS";
+      return `GPS ${Math.round(accuracy || 0)}m`;
+    }
+    
+    // Full text in normal mode
     if (!playerPosition && locationPermissionState !== 'granted') {
       return "GPS: Unavailable";
     } else if (playerPosition) {
@@ -440,8 +517,10 @@ const MapComponent = ({ onTriggerLocation }: MapComponentProps) => {
     }
   };
 
-  // Get weather icon based on condition
+  // Get simplified weather icon in performance mode
   const getWeatherIcon = () => {
+    if (performanceMode) return null; // No weather icon in performance mode
+    
     if (!gameState.weatherEffects) return <Sun className="w-4 h-4 text-amber-300" />;
     
     switch (gameState.weatherEffects.condition) {
@@ -461,19 +540,12 @@ const MapComponent = ({ onTriggerLocation }: MapComponentProps) => {
     }
   };
 
-  // Get weather status text
-  const getWeatherText = () => {
-    if (!gameState.weatherEffects) return "Weather: Clear";
-    return `Weather: ${gameState.weatherEffects.condition.charAt(0).toUpperCase() + 
-      gameState.weatherEffects.condition.slice(1)}`;
-  };
-
   return (
     <div className="map-container h-full rounded-md overflow-hidden relative border-2 border-[#2d1b2d] shadow-[0_0_15px_rgba(0,0,0,0.5)]">
       <div id="map" ref={mapRef} className="h-full w-full z-[1]"></div>
       
-      {/* Weather effect overlay */}
-      {gameState.weatherEffects && (
+      {/* Weather effect overlay - hide in performance mode */}
+      {gameState.weatherEffects && !performanceMode && (
         <div 
           className="absolute inset-0 z-[2] pointer-events-none"
           style={{
@@ -574,17 +646,19 @@ const MapComponent = ({ onTriggerLocation }: MapComponentProps) => {
         </div>
       )}
       
-      {/* Weather and GPS indicators */}
+      {/* Position update indicator - simplified in performance mode */}
       <div className="absolute top-3 left-3 flex flex-col gap-2 z-30">
-        {/* Weather status */}
-        <div className="bg-[#1a3a3a]/90 backdrop-blur-sm px-3 py-1.5 text-xs text-[#e8e0c9] rounded-md flex items-center border border-[#e8e0c9]/30 shadow-md">
-          {getWeatherIcon()}
-          <span className="ml-2">{getWeatherText()}</span>
-        </div>
+        {/* Weather status - hide in performance mode */}
+        {!performanceMode && (
+          <div className="bg-[#1a3a3a]/90 backdrop-blur-sm px-3 py-1.5 text-xs text-[#e8e0c9] rounded-md flex items-center border border-[#e8e0c9]/30 shadow-md">
+            {getWeatherIcon()}
+            <span className="ml-2">{gameState.weatherEffects ? `Weather: ${gameState.weatherEffects.condition.charAt(0).toUpperCase() + gameState.weatherEffects.condition.slice(1)}` : "Weather: Clear"}</span>
+          </div>
+        )}
         
-        {/* Position update indicator */}
+        {/* Position update indicator - simplified in performance mode */}
         <div 
-          className={`${playerPosition ? 'bg-[#1a3a3a]/90' : 'bg-[#8b0000]/90'} backdrop-blur-sm px-3 py-1.5 text-xs text-[#e8e0c9] rounded-md flex items-center border border-[#e8e0c9]/30 shadow-md`}
+          className={`${playerPosition ? 'bg-[#1a3a3a]/90' : 'bg-[#8b0000]/90'} ${!performanceMode ? 'backdrop-blur-sm' : ''} px-3 py-1.5 text-xs text-[#e8e0c9] rounded-md flex items-center border border-[#e8e0c9]/30 shadow-md`}
           onClick={locationPermissionState !== 'granted' ? requestLocationPermission : undefined}
           style={locationPermissionState !== 'granted' ? {cursor: 'pointer'} : {}}
         >
@@ -593,9 +667,9 @@ const MapComponent = ({ onTriggerLocation }: MapComponentProps) => {
         </div>
       </div>
       
-      {/* Distance meter and directional hint - moved away from bottom for mobile */}
-      {selectedLocation && playerPosition && (
-        <div className="absolute top-14 left-3 right-3 md:left-3 md:right-auto md:w-[280px] bg-[#2d1b2d]/90 backdrop-blur-md rounded-md p-3 text-[#e8e0c9] font-interface z-10 border border-[#1a3a3a] shadow-md">
+      {/* Distance meter and directional hint - hide in performance mode on mobile */}
+      {selectedLocation && playerPosition && (!performanceMode || !isMobile) && (
+        <div className={`absolute ${isMobile ? 'bottom-3 left-3 right-3' : 'top-14 left-3 right-3 md:left-3 md:right-auto md:w-[280px]'} ${performanceMode ? 'bg-[#2d1b2d]' : 'bg-[#2d1b2d]/90 backdrop-blur-md'} rounded-md p-3 text-[#e8e0c9] font-interface z-10 border border-[#1a3a3a] shadow-md`}>
           <div className="flex justify-between items-center mb-1">
             <h3 className="text-sm font-bold text-[#e8e0c9]">
               {selectedLocation.name}
@@ -605,9 +679,11 @@ const MapComponent = ({ onTriggerLocation }: MapComponentProps) => {
             </span>
           </div>
           
-          <div className="text-sm italic opacity-90">
-            {getDirectionalHint(direction, distance)}
-          </div>
+          {!performanceMode && (
+            <div className="text-sm italic opacity-90">
+              {getDirectionalHint(direction, distance)}
+            </div>
+          )}
         </div>
       )}
     </div>

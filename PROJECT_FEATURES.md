@@ -45,6 +45,13 @@
 - Game over simulation button
 - Highscore system backend
 
+### Multiplayer & Engagement Features
+- Multiplayer event tracking
+- Special location-based mini-games (Bruce Lee game at Pilot Statue)
+- Start game popup when player approaches the Pilot Statue
+- Secret locations with special rewards
+- Super secret location with exclusive content
+
 ## Technologies Used
 - React (Frontend framework)
 - TypeScript (Type safety)
@@ -66,10 +73,13 @@
 6. Stage progression as story locations are completed
 7. Game over when health or sanity reaches zero
 8. Highscore recording based on progress
+9. Special mini-games at unique locations
 
 ## Future Enhancements
 - Additional story branches and locations
 - More detailed environment descriptions
 - Enhanced visual effects for sanity loss
 - Weather integration affecting gameplay
-- Multiplayer event tracking
+- Multiplayer cooperative missions
+- AR integration for detecting symbols in real world
+- Expanded mini-games collection

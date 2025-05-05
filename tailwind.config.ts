@@ -5,6 +5,26 @@ export default {
   content: ["./client/index.html", "./client/src/**/*.{js,jsx,ts,tsx}"],
   theme: {
     extend: {
+      screens: {
+        // Standard screen sizes
+        'sm': '640px',
+        'md': '768px',
+        'lg': '1024px',
+        'xl': '1280px',
+        '2xl': '1536px',
+        
+        // High-resolution screens for landscape mode
+        'full-hd': '1920px',
+        '2k': '2560px',
+        '4k': '3840px',
+        
+        // Orientation-based utilities
+        'landscape': {'raw': '(orientation: landscape)'},
+        'portrait': {'raw': '(orientation: portrait)'},
+        
+        // Samsung DeX and external display support
+        'dex': {'raw': '(min-width: 1024px) and (min-height: 768px)'},
+      },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
@@ -61,6 +81,20 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+      },
+      // UI spacing for landscape layouts
+      spacing: {
+        '128': '32rem',
+        '144': '36rem',
+        '160': '40rem',
+      },
+      // Font sizes optimized for different screens
+      fontSize: {
+        // ... (existing font sizes)
+        'hd': ['1rem', { lineHeight: '1.5rem' }], // 1080p screens
+        'fullhd': ['1.125rem', { lineHeight: '1.75rem' }], // 1080p screens
+        '2k': ['1.25rem', { lineHeight: '2rem' }], // 1440p screens
+        '4k': ['1.5rem', { lineHeight: '2.25rem' }], // 4K screens
       },
       keyframes: {
         "accordion-down": {

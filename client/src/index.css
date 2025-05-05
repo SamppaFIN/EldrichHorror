@@ -86,6 +86,42 @@
 
   body {
     @apply font-sans antialiased bg-background text-foreground;
+    overscroll-behavior: none; /* Prevents pull-to-refresh on mobile browsers */
+  }
+  
+  /* Optimize touch interfaces */
+  button, a, [role="button"] {
+    @apply touch-manipulation;
+  }
+  
+  /* Remove focus outlines for better mobile appearance */
+  :focus {
+    outline: none !important;
+  }
+  
+  /* Smoother scrolling on touch devices */
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Mobile-first media queries */
+@media (max-width: 640px) {
+  body {
+    font-size: 14px;
+  }
+  
+  h1 {
+    font-size: 1.5rem;
+  }
+  
+  h2 {
+    font-size: 1.25rem;
+  }
+  
+  .map-container {
+    height: 100% !important;
+    width: 100% !important;
   }
 }
 
@@ -212,4 +248,85 @@
     Consolas, "Courier New", monospace;
   --font-horror: "Creepster", "Horror", var(--font-sans);
   --font-interface: "IBM Plex Mono", var(--font-mono);
+}
+
+/* Add performance mode optimizations */
+.performance-mode {
+  /* Disable or reduce animations */
+  --animate-duration: 0s !important;
+  
+  /* Simplify gradients and effects */
+  --ui-gradient: none !important;
+  --ui-shadow: none !important;
+  
+  /* Reduce transparency effects */
+  --ui-opacity: 1 !important;
+  
+  /* Disable backdrop blur effects */
+  --backdrop-blur: 0 !important;
+  
+  /* Simplify backgrounds */
+  --bg-pattern: none !important;
+}
+
+/* Add class to body when performance mode is active */
+body.performance-mode * {
+  animation-duration: 0s !important;
+  transition-duration: 0s !important;
+  animation: none !important;
+  transition: none !important;
+  backdrop-filter: none !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  filter: none !important;
+}
+
+/* Mobile-specific optimizations */
+@media (max-width: 640px) {
+  body.performance-mode {
+    /* Use solid colors instead of transparency */
+    --ui-bg-color: #2d1b2d !important;
+    --ui-border-color: #1a3a3a !important;
+    
+    /* Reduce the quality of background images */
+    background-image: none !important;
+  }
+  
+  /* Hide complex UI elements for better performance */
+  body.performance-mode .weather-effect,
+  body.performance-mode .shadow-effect,
+  body.performance-mode .animate-ping,
+  body.performance-mode .animate-pulse {
+    display: none !important;
+  }
+  
+  /* Optimize scrolling containers */
+  body.performance-mode .overflow-y-auto {
+    overflow: auto !important;
+    -webkit-overflow-scrolling: auto !important;
+  }
+  
+  /* Force hardware acceleration for map container */
+  .map-container {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000;
+    will-change: transform;
+  }
+  
+  /* Reduce marker sizes on mobile */
+  .leaflet-marker-icon {
+    transform: scale(0.8);
+  }
+}
+
+/* Hide map toggle and map on very small screens in performance mode */
+@media (max-width: 360px) {
+  body.performance-mode .map-toggle {
+    position: fixed !important;
+    bottom: 1rem !important;
+    right: 1rem !important;
+    top: auto !important;
+    z-index: 50 !important;
+  }
 }

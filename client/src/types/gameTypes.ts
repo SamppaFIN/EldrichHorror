@@ -1,13 +1,13 @@
 import { WeatherCondition } from '@/lib/weatherService';
 
 // Game types
-export type Screen = 'welcome' | 'game' | 'cutscene' | 'gameover' | 'debug';
+export type Screen = 'welcome' | 'game' | 'cutscene' | 'gameover' | 'debug' | 'startgame';
 export type Difficulty = 'easy' | 'medium' | 'hard';
 export type Stage = 'start' | '1' | '2' | '3' | 'final';
 export type LocationType = {
   id: string;
   name: string;
-  type: 'story' | 'secret' | 'cutscene';
+  type: 'story' | 'secret' | 'cutscene' | 'startgame';
   lat: number;
   lng: number;
   radius: number;
@@ -65,6 +65,7 @@ export type GameState = {
   visitedLocations: string[];
   discoveredSecrets: string[];
   difficulty: Difficulty;
+  performanceMode: boolean;
   weatherEffects?: {
     condition: WeatherCondition;
     sanityModifier: number;
@@ -83,4 +84,15 @@ export type HighScore = {
   finalSanity: number;
   difficulty: Difficulty;
   date?: string;
+};
+
+// Bruce Lee Game type
+export type BruceLeeMoveType = 'punch' | 'kick' | 'jump' | 'duck';
+
+export type BruceLeeGameState = {
+  level: number;
+  health: number;
+  score: number;
+  enemiesDefeated: number;
+  moves: BruceLeeMoveType[];
 };
