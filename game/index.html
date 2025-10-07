@@ -131,6 +131,48 @@
             </button>
         </div>
         
+        <!-- Offline/Testing Mode Control Panel -->
+        <div id="testing-panel" class="testing-panel glass-panel hidden">
+            <div class="testing-header">
+                <span class="testing-title">🧪 Testing Mode</span>
+                <button class="testing-close" id="testing-close">×</button>
+            </div>
+            <div class="testing-content">
+                <div class="testing-status">
+                    <div class="status-indicator" id="gps-status">
+                        <span class="status-icon">📍</span>
+                        <span class="status-label">GPS: Simulated</span>
+                    </div>
+                    <div class="status-indicator" id="connection-status">
+                        <span class="status-icon">📡</span>
+                        <span class="status-label">Offline Mode</span>
+                    </div>
+                </div>
+                
+                <div class="testing-controls">
+                    <button class="test-button" id="sim-start">▶️ Start Auto-Walk</button>
+                    <button class="test-button" id="sim-pause">⏸️ Pause</button>
+                    <button class="test-button" id="sim-stop">⏹️ Stop</button>
+                </div>
+                
+                <div class="testing-manual">
+                    <span class="control-label">Manual Control:</span>
+                    <div class="direction-pad">
+                        <button class="dir-btn" id="dir-north">⬆️</button>
+                        <button class="dir-btn" id="dir-west">⬅️</button>
+                        <button class="dir-btn" id="dir-east">➡️</button>
+                        <button class="dir-btn" id="dir-south">⬇️</button>
+                    </div>
+                </div>
+                
+                <div class="testing-speed">
+                    <label for="speed-slider">Walking Speed:</label>
+                    <input type="range" id="speed-slider" min="0.5" max="3" step="0.1" value="1.4">
+                    <span id="speed-value">1.4 m/s</span>
+                </div>
+            </div>
+        </div>
+        
         <!-- Lore Codex Modal -->
         <div id="codex-modal" class="modal hidden">
             <div class="modal-content glass-panel-solid">
@@ -156,6 +198,25 @@
             </div>
         </div>
         
+        <!-- NPC Chat Dialog Modal -->
+        <div id="npc-chat-modal" class="modal hidden">
+            <div class="modal-content glass-panel-solid npc-chat-content">
+                <div class="npc-portrait" id="npc-portrait">
+                    <!-- NPC illustration SVG will be inserted here -->
+                </div>
+                <div class="npc-name" id="npc-name">Aurora</div>
+                <div class="npc-dialog" id="npc-dialog">
+                    <p>Greetings, Consciousness Walker...</p>
+                </div>
+                <div class="npc-rewards" id="npc-rewards">
+                    <!-- Rewards will be shown here -->
+                </div>
+                <div class="npc-actions">
+                    <button class="action-button primary" id="npc-continue-btn">Continue</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Welcome Tutorial Modal -->
         <div id="tutorial-modal" class="modal">
             <div class="modal-content glass-panel-solid tutorial-content">
@@ -218,6 +279,7 @@
     <!-- Game Scripts -->
     <script src="js/config.js"></script>
     <script src="js/SVGMarkerFactory.js"></script>
+    <script src="js/GPSSimulator.js"></script>
     <script src="js/GeolocationManager.js"></script>
     <script src="js/ConsciousnessEngine.js"></script>
     <script src="js/LoreSystem.js"></script>

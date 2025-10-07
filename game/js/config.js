@@ -7,6 +7,10 @@ const GameConfig = {
     // Game Version
     version: '1.0.0-alpha',
     
+    // OFFLINE/TESTING MODE - Set true to play without internet
+    offlineMode: false, // Auto-detected if no connection
+    testingMode: false,  // Manual override for full testing features
+    
     // Map Settings
     map: {
         initialZoom: 16,
@@ -21,6 +25,14 @@ const GameConfig = {
         // Dark theme - CartoDB Dark Matter (free, no API key)
         cosmicTileUrl: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
         cosmicAttribution: '© OpenStreetMap © CartoDB | Eldritch Sanctuary',
+        
+        // OFFLINE FALLBACK: Canvas-rendered map (no internet required)
+        offlineFallback: {
+            enabled: true,
+            backgroundColor: '#0a0e27',
+            gridColor: '#8b5cf6',
+            labelColor: '#fbbf24'
+        }
     },
     
     // Geolocation Settings
@@ -31,11 +43,29 @@ const GameConfig = {
         retryAttempts: 3,
         retryDelay: 2000, // 2 seconds
         
-        // Simulator mode (for testing without GPS)
+        // Simulator mode (for testing without GPS/internet)
         simulator: {
-            enabled: false, // Set true for testing
-            moveSpeed: 0.0001, // degrees per update
-            updateInterval: 1000 // ms
+            enabled: false, // Auto-enabled in offline/testing mode
+            startPosition: null, // null = use default or last known
+            
+            // Realistic walking simulation
+            walkingSpeed: 1.4, // meters per second (normal human walking)
+            updateInterval: 1000, // Update position every 1 second
+            
+            // Movement patterns
+            patterns: {
+                straight: { enabled: true, changeInterval: 30000 }, // 30s straight walks
+                curve: { enabled: true, turnRate: 5 }, // degrees per update
+                random: { enabled: true, probability: 0.1 }, // 10% chance to change direction
+                stop: { enabled: true, probability: 0.05, duration: 5000 } // 5% chance to stop for 5s
+            },
+            
+            // GPS accuracy simulation
+            accuracy: {
+                base: 7, // meters (typical smartphone GPS)
+                variation: 3, // ±3m random variance
+                degradation: false // Simulate signal loss
+            }
         }
     },
     

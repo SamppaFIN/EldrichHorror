@@ -377,16 +377,38 @@ class EldritchSanctuary {
      * Interact with Aurora
      */
     interactWithAurora(id) {
-        this.systems.consciousness.awardXP(25, 'aurora_encounter');
+        // Award XP and unlock lore
+        this.systems.consciousness.awardXP(25, 'aurora_encounter', this.systems.audio);
         this.systems.lore.unlock('aurora-first-meeting');
         this.systems.gameState.recordEncounter('aurora', { id, timestamp: Date.now() });
         
+        // Increment discovery count for Aurora encounter
+        this.systems.gameState.incrementDiscoveryCount();
+        
+        // Show notification
         this.showNotification('✨ Aurora shares her wisdom with you', 'success');
         
-        // Remove marker after interaction
-        setTimeout(() => {
-            this.systems.map.removeMarker(id);
-        }, 3000);
+        // Show chat dialog
+        this.showNPCDialog({
+            npc: 'aurora',
+            name: '✨ Aurora, The Dawn Bringer',
+            portrait: this.systems.map.markerFactory.createAuroraMarker(150),
+            dialog: [
+                'Greetings, Consciousness Walker...',
+                'I sense you are awakening to the sacred patterns that weave through reality.',
+                'Your journey has only just begun. Walk the paths of wisdom, and you shall discover truths hidden in plain sight.',
+                'May the light guide your steps and illuminate the darkness within and without.'
+            ],
+            rewards: [
+                { icon: '✨', text: '+25 XP' },
+                { icon: '📖', text: 'Lore Entry Unlocked' },
+                { icon: '🌟', text: '+1 Discovery' }
+            ],
+            onClose: () => {
+                // Remove marker after dialog closes
+                this.systems.map.removeMarker(id);
+            }
+        });
     }
     
     /**
@@ -612,11 +634,78 @@ class EldritchSanctuary {
      * Show notification
      */
     showNotification(message, type = 'info') {
-        // Simple implementation - can be enhanced with toast library
-        console.log(`[${type.toUpperCase()}] ${message}`);
+        // Use notification system if available
+        if (window.notificationSystem) {
+            window.notificationSystem.show(message, type);
+        } else {
+            console.log(`[${type.toUpperCase()}] ${message}`);
+            // Fallback for critical messages
+            if (type === 'error') {
+                alert(message);
+            }
+        }
+    }
+    
+    /**
+     * Show NPC Chat Dialog
+     * @param {Object} options - Dialog configuration
+     * @param {string} options.npc - NPC type identifier
+     * @param {string} options.name - NPC display name
+     * @param {string} options.portrait - SVG string for portrait
+     * @param {Array<string>} options.dialog - Array of dialog paragraphs
+     * @param {Array<Object>} options.rewards - Array of reward items {icon, text}
+     * @param {Function} options.onClose - Callback when dialog closes
+     */
+    showNPCDialog(options) {
+        const modal = document.getElementById('npc-chat-modal');
+        const portrait = document.getElementById('npc-portrait');
+        const nameEl = document.getElementById('npc-name');
+        const dialogEl = document.getElementById('npc-dialog');
+        const rewardsEl = document.getElementById('npc-rewards');
+        const continueBtn = document.getElementById('npc-continue-btn');
         
-        // TODO: Create beautiful notification UI
-        alert(message);
+        if (!modal) return;
+        
+        // Set portrait SVG
+        if (portrait && options.portrait) {
+            portrait.innerHTML = options.portrait;
+        }
+        
+        // Set name
+        if (nameEl && options.name) {
+            nameEl.textContent = options.name;
+        }
+        
+        // Set dialog text
+        if (dialogEl && options.dialog) {
+            dialogEl.innerHTML = options.dialog.map(text => `<p>${text}</p>`).join('');
+        }
+        
+        // Set rewards
+        if (rewardsEl && options.rewards) {
+            rewardsEl.innerHTML = options.rewards.map(reward => 
+                `<div class="npc-reward-item">
+                    <span class="npc-reward-icon">${reward.icon}</span>
+                    <span>${reward.text}</span>
+                </div>`
+            ).join('');
+        }
+        
+        // Show modal
+        modal.classList.remove('hidden');
+        
+        // Handle continue button
+        const handleClose = () => {
+            modal.classList.add('hidden');
+            continueBtn.removeEventListener('click', handleClose);
+            if (options.onClose) {
+                options.onClose();
+            }
+        };
+        
+        continueBtn.addEventListener('click', handleClose);
+        
+        this.log(`NPC Dialog shown: ${options.npc}`);
     }
     
     /**

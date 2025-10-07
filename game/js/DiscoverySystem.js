@@ -328,6 +328,18 @@ class DiscoverySystem extends EventTarget {
         // Add to collected set
         this.collectedDiscoveries.add(discovery.id);
         
+        // CRITICAL FIX: Play collection sound FIRST (for immediate feedback)
+        if (this.audio) {
+            try {
+                this.audio.playDiscoveryCollection(discovery.type.name);
+                this.log(`🔊 Playing collection sound for ${discovery.type.name}`);
+            } catch (error) {
+                this.log(`⚠️ Audio playback failed:`, error);
+            }
+        } else {
+            this.log(`⚠️ Audio system not available`);
+        }
+        
         // Grant XP
         if (this.consciousness) {
             this.consciousness.awardXP(discovery.type.xpReward, 'discovery', this.audio);
@@ -342,22 +354,22 @@ class DiscoverySystem extends EventTarget {
             }
         }
         
-        // Update game state
+        // CRITICAL FIX: Update game state (increment discovery count)
         if (this.gameState) {
             this.gameState.incrementDiscoveryCount();
+            this.log(`📊 Discovery count incremented`);
+        } else {
+            this.log(`⚠️ GameState not available - discovery count not updated!`);
         }
+        
+        // Show notification BEFORE removing marker (for visibility)
+        this.showDiscoveryNotification(discovery);
+        this.log(`📢 Notification shown`);
         
         // Remove marker from map
         if (this.mapManager && typeof this.mapManager.removeDiscoveryMarker === 'function') {
             this.mapManager.removeDiscoveryMarker(discovery.id);
-        }
-        
-        // Show notification
-        this.showDiscoveryNotification(discovery);
-        
-        // BRDC-010: Play collection sound
-        if (this.audio) {
-            this.audio.playDiscoveryCollection(discovery.type.name);
+            this.log(`🗺️ Marker removed from map`);
         }
         
         // Remove from active discoveries
@@ -368,7 +380,7 @@ class DiscoverySystem extends EventTarget {
             detail: { discovery }
         }));
         
-        this.log(`✓ Discovery collected successfully`);
+        this.log(`✅ Discovery collected successfully: ${discovery.type.name} (+${discovery.type.xpReward} XP)`);
     }
     
     /**
