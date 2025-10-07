@@ -7,7 +7,7 @@
  */
 
 class DiscoverySystem extends EventTarget {
-    constructor(gameState, mapManager, consciousnessEngine, loreSystem, geolocationManager) {
+    constructor(gameState, mapManager, consciousnessEngine, loreSystem, geolocationManager, audioSystem) {
         super();
         
         this.gameState = gameState;
@@ -15,6 +15,7 @@ class DiscoverySystem extends EventTarget {
         this.consciousness = consciousnessEngine;
         this.lore = loreSystem;
         this.geolocation = geolocationManager; // BRDC-007: Add geolocation reference
+        this.audio = audioSystem; // BRDC-010: Add audio system reference
         
         this.activeDiscoveries = new Map(); // id -> discovery
         this.collectedDiscoveries = new Set(); // Set of collected IDs
@@ -248,15 +249,31 @@ class DiscoverySystem extends EventTarget {
         if (distance <= thresholds.ready) {
             element.classList.add('proximity-ready');
             this.addProximityInfo(element, distance, 'READY TO COLLECT!');
+            // BRDC-010: Play ready sound
+            if (this.audio && !element.classList.contains('proximity-ready')) {
+                this.audio.playDiscoveryProximity('ready');
+            }
         } else if (distance <= thresholds.close) {
             element.classList.add('proximity-close');
             this.addProximityInfo(element, distance, 'Very Close');
+            // BRDC-010: Play close sound
+            if (this.audio && !element.classList.contains('proximity-close')) {
+                this.audio.playDiscoveryProximity('close');
+            }
         } else if (distance <= thresholds.near) {
             element.classList.add('proximity-near');
             this.addProximityInfo(element, distance, 'Nearby');
+            // BRDC-010: Play near sound
+            if (this.audio && !element.classList.contains('proximity-near')) {
+                this.audio.playDiscoveryProximity('near');
+            }
         } else if (distance <= thresholds.far) {
             element.classList.add('proximity-far');
             this.addProximityInfo(element, distance, 'Detected');
+            // BRDC-010: Play far sound
+            if (this.audio && !element.classList.contains('proximity-far')) {
+                this.audio.playDiscoveryProximity('far');
+            }
         } else {
             this.removeProximityInfo(element);
         }
@@ -313,7 +330,7 @@ class DiscoverySystem extends EventTarget {
         
         // Grant XP
         if (this.consciousness) {
-            this.consciousness.addXP(discovery.type.xpReward, 'discovery');
+            this.consciousness.awardXP(discovery.type.xpReward, 'discovery', this.audio);
             this.log(`+${discovery.type.xpReward} XP from discovery`);
         }
         
@@ -338,8 +355,10 @@ class DiscoverySystem extends EventTarget {
         // Show notification
         this.showDiscoveryNotification(discovery);
         
-        // Play collection sound (optional - implement later)
-        // this.playCollectionSound();
+        // BRDC-010: Play collection sound
+        if (this.audio) {
+            this.audio.playDiscoveryCollection(discovery.type.name);
+        }
         
         // Remove from active discoveries
         this.activeDiscoveries.delete(discovery.id);

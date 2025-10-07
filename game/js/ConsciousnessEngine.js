@@ -41,8 +41,9 @@ class ConsciousnessEngine extends EventTarget {
     
     /**
      * Award experience points
+     * BRDC-010: Added audio system integration
      */
-    awardXP(amount, source = 'unknown') {
+    awardXP(amount, source = 'unknown', audioSystem = null) {
         if (amount <= 0) return;
         
         this.log(`+${amount} XP from ${source}`);
@@ -52,11 +53,16 @@ class ConsciousnessEngine extends EventTarget {
         this.state.currentXP += amount;
         this.state.totalXP += amount;
         
+        // BRDC-010: Play XP gain sound
+        if (audioSystem) {
+            audioSystem.playXPGain(amount);
+        }
+        
         // Check for level up
         const xpNeeded = this.getXPForNextLevel();
         
         if (this.state.currentXP >= xpNeeded) {
-            this.levelUp();
+            this.levelUp(audioSystem);
         }
         
         // Dispatch XP gain event
@@ -73,8 +79,9 @@ class ConsciousnessEngine extends EventTarget {
     
     /**
      * Level up!
+     * BRDC-010: Added audio system integration
      */
-    levelUp() {
+    levelUp(audioSystem = null) {
         const xpNeeded = this.getXPForNextLevel();
         this.state.currentXP -= xpNeeded;
         this.state.level++;
@@ -85,6 +92,11 @@ class ConsciousnessEngine extends EventTarget {
         const stageChanged = oldStage.name !== this.state.stage.name;
         
         this.log(`✨ LEVEL UP! Now level ${this.state.level} - ${this.state.stage.name}`);
+        
+        // BRDC-010: Play level up sound
+        if (audioSystem) {
+            audioSystem.playLevelUp();
+        }
         
         // Dispatch level up event
         this.dispatchEvent(new CustomEvent('levelup', {

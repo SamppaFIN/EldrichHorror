@@ -74,13 +74,23 @@ class EldritchSanctuary {
             this.systems.notifications = new NotificationSystem();
             this.log('✓ NotificationSystem initialized');
             
+            // Audio System - BRDC-AUDIO-SYSTEM-010
+            this.systems.audio = new AudioSystem();
+            const audioInitialized = await this.systems.audio.initialize();
+            if (audioInitialized) {
+                this.log('✓ AudioSystem initialized');
+            } else {
+                this.log('⚠️ AudioSystem failed to initialize, continuing without sound');
+            }
+            
             // Discovery System - BRDC-DISCOVERY-SYSTEM-005
             this.systems.discovery = new DiscoverySystem(
                 this.systems.gameState,
                 this.systems.map,
                 this.systems.consciousness,
                 this.systems.lore,
-                this.systems.geolocation // BRDC-007: Add geolocation reference
+                this.systems.geolocation, // BRDC-007: Add geolocation reference
+                this.systems.audio // BRDC-010: Add audio system reference
             );
             
             // Initialize with player position (reuse initialPosition from above)
