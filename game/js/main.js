@@ -292,10 +292,17 @@ class EldritchSanctuary {
             this.hideModal('codex-modal');
         });
         
+        document.getElementById('settings-close')?.addEventListener('click', () => {
+            this.hideModal('settings-modal');
+        });
+        
         document.getElementById('start-journey-btn')?.addEventListener('click', () => {
             this.hideModal('tutorial-modal');
             document.getElementById('game-container')?.classList.remove('hidden');
         });
+        
+        // Settings event listeners
+        this.setupSettingsListeners();
         
         // Testing panel event listeners (only if testing mode enabled)
         if (GameConfig.testingMode) {
@@ -933,11 +940,85 @@ class EldritchSanctuary {
     }
     
     /**
+     * Set up settings event listeners
+     */
+    setupSettingsListeners() {
+        // Debug movement toggle
+        const debugToggle = document.getElementById('debug-movement-toggle');
+        const simulatorControls = document.getElementById('simulator-controls');
+        
+        if (debugToggle) {
+            debugToggle.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    // Enable debug movement
+                    this.startGPSSimulator();
+                    if (simulatorControls) {
+                        simulatorControls.style.display = 'flex';
+                    }
+                    this.showNotification('🎮 Debug movement enabled', 'success');
+                } else {
+                    // Disable debug movement
+                    this.stopGPSSimulator();
+                    if (simulatorControls) {
+                        simulatorControls.style.display = 'none';
+                    }
+                    this.showNotification('🎮 Debug movement disabled', 'info');
+                }
+            });
+        }
+        
+        // Mini direction controls in settings
+        document.getElementById('mini-dir-north')?.addEventListener('click', () => {
+            this.moveSimulator(0);
+        });
+        
+        document.getElementById('mini-dir-east')?.addEventListener('click', () => {
+            this.moveSimulator(90);
+        });
+        
+        document.getElementById('mini-dir-south')?.addEventListener('click', () => {
+            this.moveSimulator(180);
+        });
+        
+        document.getElementById('mini-dir-west')?.addEventListener('click', () => {
+            this.moveSimulator(270);
+        });
+        
+        // Sound toggle
+        document.getElementById('sound-toggle')?.addEventListener('change', (e) => {
+            this.systems.gameState.updateSettings({ soundEnabled: e.target.checked });
+            this.showNotification(`Sound ${e.target.checked ? 'enabled' : 'disabled'}`, 'info');
+        });
+        
+        // Music toggle
+        document.getElementById('music-toggle')?.addEventListener('change', (e) => {
+            this.systems.gameState.updateSettings({ musicEnabled: e.target.checked });
+            if (e.target.checked) {
+                // Resume ambient if enabled
+                if (this.systems.audio) {
+                    this.systems.audio.startAmbient('calmAlpha');
+                }
+            } else {
+                // Stop ambient
+                if (this.systems.audio) {
+                    this.systems.audio.stopAmbient();
+                }
+            }
+            this.showNotification(`Music ${e.target.checked ? 'enabled' : 'disabled'}`, 'info');
+        });
+        
+        // Notifications toggle
+        document.getElementById('notifications-toggle')?.addEventListener('change', (e) => {
+            this.systems.gameState.updateSettings({ notificationsEnabled: e.target.checked });
+            this.showNotification(`Notifications ${e.target.checked ? 'enabled' : 'disabled'}`, 'info');
+        });
+    }
+    
+    /**
      * Toggle settings panel
      */
     toggleSettings() {
-        // TODO: Implement settings panel
-        this.log('Settings panel (TODO)');
+        this.showModal('settings-modal');
     }
     
     /**

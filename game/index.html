@@ -173,6 +173,86 @@
             </div>
         </div>
         
+        <!-- Settings Modal -->
+        <div id="settings-modal" class="modal hidden">
+            <div class="modal-content glass-panel-solid">
+                <div class="modal-header">
+                    <h2 class="modal-title">⚙️ Settings</h2>
+                    <button class="modal-close" id="settings-close">×</button>
+                </div>
+                <div class="modal-body settings-body">
+                    <div class="settings-section">
+                        <h3 class="settings-section-title">🎮 Gameplay</h3>
+                        
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <label class="setting-label" for="debug-movement-toggle">Debug Movement</label>
+                                <p class="setting-description">Enable GPS simulator for testing without walking</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="debug-movement-toggle">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="setting-item" id="simulator-controls" style="display: none;">
+                            <div class="setting-info">
+                                <label class="setting-label">Simulator Controls</label>
+                                <p class="setting-description">Manual movement controls</p>
+                            </div>
+                            <div class="simulator-mini-controls">
+                                <button class="mini-dir-btn" id="mini-dir-north">⬆️</button>
+                                <button class="mini-dir-btn" id="mini-dir-west">⬅️</button>
+                                <button class="mini-dir-btn" id="mini-dir-east">➡️</button>
+                                <button class="mini-dir-btn" id="mini-dir-south">⬇️</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h3 class="settings-section-title">🔊 Audio</h3>
+                        
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <label class="setting-label" for="sound-toggle">Sound Effects</label>
+                                <p class="setting-description">Game sound effects and notifications</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="sound-toggle" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <label class="setting-label" for="music-toggle">Ambient Music</label>
+                                <p class="setting-description">Background ambient sounds</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="music-toggle" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h3 class="settings-section-title">📱 Display</h3>
+                        
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <label class="setting-label" for="notifications-toggle">Notifications</label>
+                                <p class="setting-description">Show in-game notifications</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="notifications-toggle" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <!-- Lore Codex Modal -->
         <div id="codex-modal" class="modal hidden">
             <div class="modal-content glass-panel-solid">
