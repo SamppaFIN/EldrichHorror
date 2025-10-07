@@ -1,0 +1,889 @@
+/* ===================================
+   ELDRITCH SANCTUARY - COSMIC THEME
+   Lovecraftian + Sacred Geometry Design
+   =================================== */
+
+:root {
+    /* Cosmic Color Palette */
+    --cosmic-void: #0a0e27;
+    --eldritch-purple: #8b5cf6;
+    --lovecraft-teal: #14b8a6;
+    --sacred-gold: #fbbf24;
+    --blood-crimson: #dc2626;
+    --aurora-green: #10b981;
+    --stellar-white: #f8fafc;
+    --shadow-gray: #1e293b;
+    
+    /* Accent Colors */
+    --madness-pink: #ec4899;
+    --void-indigo: #4f46e5;
+    --ancient-amber: #f59e0b;
+    --cthulhu-green: #059669;
+    
+    /* Glass Effects */
+    --glass-bg: rgba(10, 14, 39, 0.7);
+    --glass-border: rgba(139, 92, 246, 0.3);
+    --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    
+    /* Typography */
+    --font-mystical: 'Cinzel', serif;
+    --font-body: 'Inter', sans-serif;
+    --font-cosmic: 'Orbitron', sans-serif;
+    
+    /* Spacing */
+    --spacing-xs: 0.5rem;
+    --spacing-sm: 1rem;
+    --spacing-md: 1.5rem;
+    --spacing-lg: 2rem;
+    --spacing-xl: 3rem;
+    
+    /* Animations */
+    --transition-fast: 0.2s ease;
+    --transition-normal: 0.3s ease;
+    --transition-slow: 0.5s ease;
+}
+
+/* ===================================
+   GLOBAL STYLES
+   =================================== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: var(--font-body);
+    color: var(--stellar-white);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body.cosmic-background {
+    background: var(--cosmic-void);
+    background-image: 
+        radial-gradient(circle at 20% 50%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(20, 184, 166, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 40% 20%, rgba(251, 191, 36, 0.05) 0%, transparent 50%);
+}
+
+/* Starfield background effect */
+body.cosmic-background::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        radial-gradient(2px 2px at 20px 30px, white, transparent),
+        radial-gradient(2px 2px at 60px 70px, white, transparent),
+        radial-gradient(1px 1px at 50px 50px, white, transparent),
+        radial-gradient(1px 1px at 130px 80px, white, transparent),
+        radial-gradient(2px 2px at 90px 10px, white, transparent);
+    background-repeat: repeat;
+    background-size: 200px 200px;
+    opacity: 0.3;
+    animation: starfield 200s linear infinite;
+    pointer-events: none;
+    z-index: -1;
+}
+
+@keyframes starfield {
+    from { transform: translateY(0); }
+    to { transform: translateY(200px); }
+}
+
+/* ===================================
+   LOADING SCREEN
+   =================================== */
+
+.loading-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--cosmic-void);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    transition: opacity var(--transition-slow);
+}
+
+.loading-screen.fade-out {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.loading-content {
+    text-align: center;
+    padding: var(--spacing-lg);
+}
+
+.consciousness-loader {
+    width: 200px;
+    height: 200px;
+    margin: 0 auto var(--spacing-lg);
+}
+
+.loading-cube {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 0 20px rgba(139, 92, 246, 0.5));
+}
+
+.loading-title {
+    font-family: var(--font-mystical);
+    font-size: 2.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--sacred-gold), var(--eldritch-purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: var(--spacing-sm);
+    letter-spacing: 0.1em;
+}
+
+.loading-subtitle {
+    font-size: 1.1rem;
+    color: var(--lovecraft-teal);
+    margin-bottom: var(--spacing-lg);
+    opacity: 0.9;
+}
+
+.loading-bar {
+    width: 300px;
+    height: 4px;
+    background: rgba(139, 92, 246, 0.2);
+    border-radius: 2px;
+    margin: 0 auto var(--spacing-sm);
+    overflow: hidden;
+}
+
+.loading-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--sacred-gold), var(--eldritch-purple));
+    width: 0%;
+    transition: width var(--transition-normal);
+    box-shadow: 0 0 10px var(--eldritch-purple);
+}
+
+.loading-status {
+    font-size: 0.9rem;
+    color: var(--stellar-white);
+    opacity: 0.7;
+}
+
+/* ===================================
+   GAME CONTAINER
+   =================================== */
+
+.game-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.game-container.hidden {
+    display: none;
+}
+
+.map-container {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+}
+
+/* ===================================
+   GLASS PANEL EFFECTS
+   =================================== */
+
+.glass-panel {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px) saturate(180%);
+    -webkit-backdrop-filter: blur(10px) saturate(180%);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    box-shadow: var(--glass-shadow);
+}
+
+.glass-panel-solid {
+    background: rgba(10, 14, 39, 0.95);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 2px solid var(--glass-border);
+    border-radius: 16px;
+    box-shadow: 
+        var(--glass-shadow),
+        0 0 40px rgba(139, 92, 246, 0.2);
+}
+
+/* ===================================
+   TOP HUD
+   =================================== */
+
+.top-hud {
+    position: absolute;
+    top: var(--spacing-sm);
+    left: var(--spacing-sm);
+    right: var(--spacing-sm);
+    padding: var(--spacing-sm);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 100;
+}
+
+.consciousness-display {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.consciousness-icon {
+    width: 40px;
+    height: 40px;
+}
+
+.consciousness-badge {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 0 8px var(--sacred-gold));
+}
+
+.consciousness-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.consciousness-label {
+    font-family: var(--font-cosmic);
+    font-size: 0.75rem;
+    color: var(--sacred-gold);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.consciousness-bar {
+    width: 150px;
+    height: 6px;
+    background: rgba(139, 92, 246, 0.3);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.consciousness-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--eldritch-purple), var(--sacred-gold));
+    width: 0%;
+    transition: width var(--transition-normal);
+    box-shadow: 0 0 8px var(--eldritch-purple);
+}
+
+.consciousness-xp {
+    font-size: 0.7rem;
+    color: var(--stellar-white);
+    opacity: 0.8;
+}
+
+.player-stats {
+    display: flex;
+    gap: var(--spacing-md);
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.stat-icon {
+    font-size: 1.2rem;
+}
+
+.stat-value {
+    font-family: var(--font-cosmic);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--sacred-gold);
+}
+
+.stat-label {
+    font-size: 0.7rem;
+    color: var(--stellar-white);
+    opacity: 0.7;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* ===================================
+   BOTTOM ACTION PANEL
+   =================================== */
+
+.bottom-panel {
+    position: absolute;
+    bottom: var(--spacing-sm);
+    left: 50%;
+    transform: translateX(-50%);
+    padding: var(--spacing-xs);
+    display: flex;
+    gap: var(--spacing-xs);
+    z-index: 100;
+}
+
+.action-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: var(--spacing-sm);
+    min-width: 70px;
+    background: rgba(139, 92, 246, 0.1);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    color: var(--stellar-white);
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    -webkit-tap-highlight-color: transparent;
+}
+
+.action-button:hover,
+.action-button:active {
+    background: rgba(139, 92, 246, 0.3);
+    border-color: var(--eldritch-purple);
+    box-shadow: 0 0 15px rgba(139, 92, 246, 0.5);
+    transform: translateY(-2px);
+}
+
+.action-button.primary {
+    background: linear-gradient(135deg, var(--eldritch-purple), var(--void-indigo));
+    border-color: var(--eldritch-purple);
+    font-weight: 600;
+}
+
+.action-button.primary:hover,
+.action-button.primary:active {
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.7);
+}
+
+.action-button.large {
+    padding: var(--spacing-md) var(--spacing-lg);
+    min-width: 200px;
+    font-size: 1rem;
+    border-radius: 12px;
+}
+
+.action-button svg {
+    width: 24px;
+    height: 24px;
+}
+
+/* ===================================
+   MODALS
+   =================================== */
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: var(--spacing-lg);
+    animation: fadeIn var(--transition-normal);
+}
+
+.modal.hidden {
+    display: none;
+}
+
+.modal-content {
+    max-width: 600px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    padding: var(--spacing-lg);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.modal-title {
+    font-family: var(--font-mystical);
+    font-size: 1.8rem;
+    color: var(--sacred-gold);
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    color: var(--stellar-white);
+    font-size: 2rem;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color var(--transition-fast);
+}
+
+.modal-close:hover {
+    color: var(--blood-crimson);
+}
+
+.modal-body {
+    padding: var(--spacing-sm) 0;
+}
+
+/* ===================================
+   TUTORIAL / CODEX CONTENT
+   =================================== */
+
+.tutorial-content {
+    text-align: center;
+}
+
+.tutorial-illustration {
+    width: 200px;
+    height: 200px;
+    margin: 0 auto var(--spacing-lg);
+}
+
+.tutorial-svg {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 0 20px rgba(251, 191, 36, 0.5));
+}
+
+.tutorial-title {
+    font-family: var(--font-mystical);
+    font-size: 2rem;
+    color: var(--sacred-gold);
+    margin-bottom: var(--spacing-md);
+}
+
+.tutorial-text {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--stellar-white);
+    opacity: 0.9;
+    margin-bottom: var(--spacing-lg);
+}
+
+.tutorial-features {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+.tutorial-feature {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm);
+    background: rgba(139, 92, 246, 0.1);
+    border-radius: 8px;
+}
+
+.feature-icon {
+    font-size: 1.5rem;
+}
+
+.feature-text {
+    font-size: 0.9rem;
+    text-align: left;
+}
+
+.tutorial-note {
+    margin-top: var(--spacing-md);
+    color: var(--lovecraft-teal);
+    opacity: 0.8;
+}
+
+.codex-entry {
+    margin-bottom: var(--spacing-lg);
+    padding: var(--spacing-md);
+    background: rgba(139, 92, 246, 0.05);
+    border-radius: 12px;
+    border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.codex-entry h3 {
+    font-family: var(--font-mystical);
+    font-size: 1.5rem;
+    color: var(--sacred-gold);
+    margin-bottom: var(--spacing-sm);
+}
+
+.codex-illustration {
+    width: 100%;
+    height: 200px;
+    margin: var(--spacing-md) 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+}
+
+.lore-text {
+    font-size: 1rem;
+    line-height: 1.8;
+    color: var(--stellar-white);
+    opacity: 0.9;
+    font-style: italic;
+    margin-bottom: var(--spacing-md);
+}
+
+.consciousness-reward {
+    display: inline-block;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    background: linear-gradient(135deg, var(--eldritch-purple), var(--sacred-gold));
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--cosmic-void);
+}
+
+/* ===================================
+   ANIMATIONS
+   =================================== */
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes glow-pulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+}
+
+@keyframes rotate-slow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes rotate-reverse {
+    from { transform: rotate(360deg); }
+    to { transform: rotate(0deg); }
+}
+
+.glow-pulse {
+    animation: glow-pulse 2s ease-in-out infinite;
+}
+
+.rotate-slow {
+    animation: rotate-slow 20s linear infinite;
+}
+
+.rotate-reverse {
+    animation: rotate-reverse 15s linear infinite;
+}
+
+/* ===================================
+   RESPONSIVE DESIGN
+   =================================== */
+
+@media (max-width: 768px) {
+    .top-hud {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-sm);
+    }
+    
+    .consciousness-bar {
+        width: 100%;
+    }
+    
+    .player-stats {
+        width: 100%;
+        justify-content: space-around;
+    }
+    
+    .bottom-panel {
+        width: calc(100% - 2rem);
+    }
+    
+    .action-button {
+        flex: 1;
+        min-width: auto;
+    }
+    
+    .tutorial-features {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ===================================
+   SCROLLBAR STYLING
+   =================================== */
+
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(10, 14, 39, 0.5);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--eldritch-purple);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--sacred-gold);
+}
+
+/* ===================================
+   NOTIFICATION SYSTEM
+   BRDC: BRDC-DISCOVERY-SYSTEM-005
+   =================================== */
+
+.notification-container {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.notification {
+    padding: 16px 20px;
+    background: rgba(10, 14, 39, 0.95);
+    border: 2px solid var(--glass-border);
+    border-radius: 12px;
+    color: var(--stellar-white);
+    font-size: 0.9rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    transform: translateX(400px);
+    opacity: 0;
+    transition: all 0.3s ease;
+    min-width: 250px;
+    max-width: 350px;
+    pointer-events: auto;
+    position: relative;
+}
+
+.notification.show {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.notification.hide {
+    transform: translateX(400px);
+    opacity: 0;
+}
+
+.notification-line {
+    margin: 4px 0;
+    line-height: 1.4;
+}
+
+.notification-line:first-child {
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.notification-close {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: none;
+    border: none;
+    color: var(--stellar-white);
+    font-size: 20px;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.notification-close:hover {
+    opacity: 1;
+}
+
+.notification-success {
+    border-color: var(--sacred-gold);
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+}
+
+.notification-info {
+    border-color: var(--lovecraft-teal);
+    box-shadow: 0 0 20px rgba(20, 184, 166, 0.3);
+}
+
+.notification-warning {
+    border-color: var(--ancient-amber);
+    box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
+}
+
+.notification-error {
+    border-color: var(--blood-crimson);
+    box-shadow: 0 0 20px rgba(220, 38, 38, 0.3);
+}
+
+/* ===================================
+   DISCOVERY MARKERS
+   BRDC: BRDC-DISCOVERY-SYSTEM-005
+   =================================== */
+
+.discovery-marker {
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.discovery-marker:hover {
+    transform: scale(1.1);
+}
+
+.discovery-marker-container {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.discovery-icon-bg {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, var(--sacred-gold) 0%, transparent 70%);
+    border-radius: 50%;
+    animation: discovery-pulse 2s ease-in-out infinite;
+}
+
+.discovery-icon {
+    position: relative;
+    font-size: 24px;
+    animation: discovery-float 3s ease-in-out infinite;
+    filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.8));
+}
+
+@keyframes discovery-pulse {
+    0%, 100% {
+        opacity: 0.6;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.2);
+    }
+}
+
+@keyframes discovery-float {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-5px);
+    }
+}
+
+/* Discovery rarity colors */
+.discovery-common .discovery-icon {
+    filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.8));
+}
+
+.discovery-uncommon .discovery-icon {
+    filter: drop-shadow(0 0 8px rgba(20, 184, 166, 0.8));
+}
+
+.discovery-rare .discovery-icon {
+    filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.8));
+}
+
+.discovery-epic .discovery-icon {
+    filter: drop-shadow(0 0 12px rgba(236, 72, 153, 1));
+}
+
+/* Collection animation */
+.discovery-marker.collecting {
+    animation: collect-marker 0.5s ease-out forwards;
+}
+
+@keyframes collect-marker {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.5);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(0);
+        opacity: 0;
+    }
+}
+
+/* Discovery rarity badge in popup */
+.discovery-rarity {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-top: 8px;
+}
+
+.rarity-common {
+    background: rgba(139, 92, 246, 0.3);
+    color: var(--eldritch-purple);
+}
+
+.rarity-uncommon {
+    background: rgba(20, 184, 166, 0.3);
+    color: var(--lovecraft-teal);
+}
+
+.rarity-rare {
+    background: rgba(251, 191, 36, 0.3);
+    color: var(--sacred-gold);
+}
+
+.rarity-epic {
+    background: rgba(236, 72, 153, 0.3);
+    color: var(--madness-pink);
+}
+

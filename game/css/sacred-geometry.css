@@ -1,0 +1,415 @@
+/* ===================================
+   SACRED GEOMETRY SVG STYLES
+   SVG Markers & Effects
+   =================================== */
+
+/* ===================================
+   SACRED GEOMETRY MARKERS
+   =================================== */
+
+.sacred-marker {
+    transform: translateZ(0); /* Force GPU acceleration */
+    will-change: transform;
+    cursor: pointer;
+    transition: filter 0.3s ease;
+}
+
+.sacred-marker:hover {
+    filter: brightness(1.3) drop-shadow(0 0 15px currentColor);
+}
+
+/* Player Marker - Metatron's Cube */
+.player-marker {
+    filter: drop-shadow(0 0 12px var(--eldritch-purple));
+}
+
+.player-marker .player-position {
+    animation: pulse-bright 1.5s ease-in-out infinite;
+}
+
+.player-marker .sacred-ring {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.player-marker .sacred-ring.animate-pulse-2 {
+    animation-delay: 0.3s;
+}
+
+.player-marker .sacred-ring.animate-pulse-3 {
+    animation-delay: 0.6s;
+}
+
+/* Aurora NPC - Flower of Life */
+.npc-aurora {
+    filter: drop-shadow(0 0 15px var(--sacred-gold));
+}
+
+.npc-aurora .sacred-geometry {
+    animation: rotate-slow 20s linear infinite;
+}
+
+/* Cthulhu Entity - Eldritch Sigil */
+.entity-cthulhu {
+    filter: drop-shadow(0 0 10px var(--lovecraft-teal));
+}
+
+.entity-cthulhu .writhing {
+    animation: writhe 3s ease-in-out infinite;
+}
+
+.entity-cthulhu .writhing-tentacle {
+    animation: writhe 2s ease-in-out infinite;
+}
+
+.entity-cthulhu .writhing-tentacle.delay-1 {
+    animation-delay: 0.5s;
+}
+
+.entity-cthulhu .writhing-tentacle.delay-2 {
+    animation-delay: 1s;
+}
+
+.entity-cthulhu .writhing-tentacle.delay-3 {
+    animation-delay: 1.5s;
+}
+
+.entity-cthulhu .blink {
+    animation: blink 4s steps(1) infinite;
+}
+
+/* Sacred Space - Sri Yantra */
+.sacred-space {
+    filter: drop-shadow(0 0 20px var(--sacred-gold));
+}
+
+.sacred-space .yantra-geometry {
+    animation: breathe 3s ease-in-out infinite;
+}
+
+/* Base Territory - Hexagonal Grid */
+.base-marker {
+    filter: drop-shadow(0 0 8px var(--eldritch-purple));
+}
+
+.base-marker .territory-hex {
+    animation: pulse-slow 4s ease-in-out infinite;
+}
+
+/* Portal - Vesica Piscis */
+.portal-marker {
+    filter: drop-shadow(0 0 15px var(--void-indigo));
+}
+
+.portal-marker .portal-circle-1,
+.portal-marker .portal-circle-2 {
+    animation: breathe 2s ease-in-out infinite alternate;
+}
+
+.portal-marker .portal-circle-2 {
+    animation-delay: 0.3s;
+}
+
+.portal-marker .portal-energy {
+    animation: spiral 4s linear infinite;
+}
+
+.portal-marker .portal-tentacle {
+    animation: writhe 2.5s ease-in-out infinite;
+}
+
+/* ===================================
+   CONSCIOUSNESS AURA
+   =================================== */
+
+.consciousness-aura {
+    pointer-events: none;
+}
+
+.consciousness-aura .aura-outer {
+    animation: breathe 4s ease-in-out infinite;
+}
+
+.consciousness-aura .aura-inner {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+/* ===================================
+   PATH TRAILS
+   =================================== */
+
+.sacred-path {
+    pointer-events: none;
+}
+
+.sacred-path .journey-path {
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+    animation: dash 20s linear forwards;
+}
+
+@keyframes dash {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+/* ===================================
+   EFFECTS & ANIMATIONS
+   =================================== */
+
+.reality-distortion {
+    animation: distort 5s ease-in-out infinite;
+    filter: blur(0.5px) hue-rotate(180deg);
+}
+
+@keyframes distort {
+    0%, 100% {
+        transform: scale(1) skew(0deg);
+        filter: blur(0px) hue-rotate(0deg);
+    }
+    25% {
+        transform: scale(1.02) skew(1deg);
+        filter: blur(0.5px) hue-rotate(45deg);
+    }
+    50% {
+        transform: scale(0.98) skew(-1deg);
+        filter: blur(1px) hue-rotate(90deg);
+    }
+    75% {
+        transform: scale(1.01) skew(0.5deg);
+        filter: blur(0.5px) hue-rotate(135deg);
+    }
+}
+
+/* ===================================
+   LEAFLET MARKER POPUP STYLING
+   =================================== */
+
+.leaflet-popup-content-wrapper {
+    background: rgba(10, 14, 39, 0.95);
+    backdrop-filter: blur(20px);
+    color: var(--stellar-white);
+    border: 2px solid var(--glass-border);
+    border-radius: 12px;
+    box-shadow: 
+        0 8px 32px 0 rgba(31, 38, 135, 0.37),
+        0 0 40px rgba(139, 92, 246, 0.3);
+}
+
+.leaflet-popup-content {
+    margin: 1rem;
+    font-family: var(--font-body);
+}
+
+.leaflet-popup-tip {
+    background: rgba(10, 14, 39, 0.95);
+    border: 2px solid var(--glass-border);
+    border-width: 0 2px 2px 0;
+}
+
+.leaflet-container a.leaflet-popup-close-button {
+    color: var(--stellar-white);
+    font-size: 24px;
+    font-weight: bold;
+    padding: 8px;
+}
+
+.leaflet-container a.leaflet-popup-close-button:hover {
+    color: var(--blood-crimson);
+}
+
+.marker-popup-coords {
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    color: var(--lovecraft-teal);
+    margin-top: 0.5rem;
+    opacity: 0.7;
+    text-align: center;
+}
+
+/* Popup Content Styling */
+.marker-popup-title {
+    font-family: var(--font-mystical);
+    font-size: 1.3rem;
+    color: var(--sacred-gold);
+    margin-bottom: 0.5rem;
+}
+
+.marker-popup-description {
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: var(--stellar-white);
+    opacity: 0.9;
+    margin-bottom: 0.75rem;
+}
+
+.marker-popup-action {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: linear-gradient(135deg, var(--eldritch-purple), var(--void-indigo));
+    color: var(--stellar-white);
+    border: none;
+    border-radius: 8px;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.marker-popup-action:hover {
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.7);
+    transform: translateY(-2px);
+}
+
+/* ===================================
+   MAP CONTROLS STYLING
+   =================================== */
+
+.leaflet-control-zoom a,
+.leaflet-control-layers-toggle {
+    background: rgba(10, 14, 39, 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border) !important;
+    color: var(--stellar-white) !important;
+}
+
+.leaflet-control-zoom a:hover,
+.leaflet-control-layers-toggle:hover {
+    background: rgba(139, 92, 246, 0.3);
+    border-color: var(--eldritch-purple) !important;
+}
+
+.leaflet-control-attribution {
+    background: rgba(10, 14, 39, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    color: var(--stellar-white);
+    font-size: 0.7rem;
+}
+
+.leaflet-control-attribution a {
+    color: var(--lovecraft-teal);
+}
+
+/* ===================================
+   COSMIC MAP TILE EFFECTS
+   =================================== */
+
+.leaflet-tile-container {
+    /* Removed dark filter - tiles should be visible */
+    filter: contrast(1.1) saturate(0.9);
+}
+
+/* Night mode enhancement */
+body.night-mode .leaflet-tile-container {
+    filter: brightness(0.8) contrast(1.2) saturate(0.7) hue-rotate(5deg);
+}
+
+/* ===================================
+   MARKER CLUSTERS (if using)
+   =================================== */
+
+.marker-cluster {
+    background: rgba(139, 92, 246, 0.3);
+    border: 2px solid var(--eldritch-purple);
+    border-radius: 50%;
+    color: var(--stellar-white);
+    font-family: var(--font-cosmic);
+    font-weight: bold;
+    text-align: center;
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+}
+
+.marker-cluster-small {
+    background: rgba(139, 92, 246, 0.2);
+}
+
+.marker-cluster-medium {
+    background: rgba(139, 92, 246, 0.4);
+}
+
+.marker-cluster-large {
+    background: rgba(139, 92, 246, 0.6);
+}
+
+/* ===================================
+   SPECIAL EFFECTS
+   =================================== */
+
+.consciousness-burst {
+    animation: burst 1s ease-out forwards;
+}
+
+@keyframes burst {
+    0% {
+        transform: scale(0);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(3);
+        opacity: 0;
+    }
+}
+
+.level-up-effect {
+    animation: levelUp 2s ease-out forwards;
+}
+
+@keyframes levelUp {
+    0% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: translateY(-50px) scale(1.5);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(-100px) scale(2);
+        opacity: 0;
+    }
+}
+
+/* ===================================
+   SACRED GEOMETRY PATTERNS
+   =================================== */
+
+.sacred-pattern-bg {
+    background-image: 
+        repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(251, 191, 36, 0.05) 2px, rgba(251, 191, 36, 0.05) 4px),
+        repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(251, 191, 36, 0.05) 2px, rgba(251, 191, 36, 0.05) 4px);
+}
+
+.flower-of-life-bg {
+    background-image: radial-gradient(circle at 50% 50%, transparent 30%, rgba(251, 191, 36, 0.05) 30%, rgba(251, 191, 36, 0.05) 31%, transparent 31%);
+    background-size: 40px 40px;
+}
+
+/* ===================================
+   RESPONSIVE MARKER SIZES
+   =================================== */
+
+@media (max-width: 768px) {
+    .sacred-marker {
+        transform: scale(0.8);
+    }
+    
+    .leaflet-popup-content-wrapper {
+        max-width: 280px;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    .sacred-marker {
+        transform: scale(0.9);
+    }
+}
+
+@media (min-width: 1025px) {
+    .sacred-marker {
+        transform: scale(1);
+    }
+}
+

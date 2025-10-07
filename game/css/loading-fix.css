@@ -1,0 +1,86 @@
+/* Loading Screen Fix */
+.loading-screen {
+    z-index: 10000 !important;
+    transition: opacity 0.5s ease;
+}
+
+.loading-screen.hidden {
+    display: none !important;
+}
+
+#game-container {
+    z-index: 1;
+}
+
+/* Map Container Fix */
+#map {
+    width: 100vw !important;
+    height: 100vh !important;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    background: #0a0e27; /* Fallback background while tiles load */
+}
+
+.leaflet-container {
+    width: 100% !important;
+    height: 100% !important;
+    background: transparent !important; /* Ensure no dark overlay from leaflet */
+}
+
+/* Ensure leaflet panes are properly stacked */
+.leaflet-pane {
+    z-index: auto;
+}
+
+.leaflet-tile-pane {
+    opacity: 1 !important;
+}
+
+/* Fix popup z-index - BRDC-DISCOVERY-SPAWN-006 */
+.leaflet-popup-pane {
+    z-index: 700 !important;
+}
+
+.leaflet-popup {
+    z-index: 1000 !important;
+}
+
+/* ===================================
+   MARKER SCALING FIX
+   Keep markers at fixed pixel size regardless of zoom
+   =================================== */
+
+.leaflet-marker-icon {
+    /* Prevent markers from scaling with zoom */
+    transform-origin: center bottom !important;
+}
+
+/* Sacred marker styles */
+.svg-marker,
+.player-marker-icon,
+.aurora-marker-icon,
+.cthulhu-marker-icon,
+.sacred-space-marker-icon,
+.portal-marker-icon {
+    /* Keep markers at fixed pixel size */
+    width: auto !important;
+    height: auto !important;
+}
+
+/* Player marker specific */
+.player-marker-icon {
+    filter: drop-shadow(0 4px 12px rgba(139, 92, 246, 0.6));
+    animation: player-pulse 2s ease-in-out infinite;
+}
+
+@keyframes player-pulse {
+    0%, 100% {
+        filter: drop-shadow(0 4px 12px rgba(139, 92, 246, 0.6));
+    }
+    50% {
+        filter: drop-shadow(0 4px 20px rgba(139, 92, 246, 0.9));
+    }
+}
+

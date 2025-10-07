@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build outputs
+dist/
+build/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+*.tmp
+~*
+
+# Local test servers
+*.bat
+!start-server.bat
+
+# Documentation drafts (keep final docs)
+*_DRAFT.md
+*_WIP.md
+
+# Python cache (if any)
+__pycache__/
+*.py[cod]
+*.pyo
+
