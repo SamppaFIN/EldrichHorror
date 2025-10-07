@@ -21,6 +21,18 @@ class AudioSystem extends EventTarget {
         this.volume = 0.7;
         this.masterVolume = 0.8;
         
+        // Ambient state
+        this.ambientNodes = {
+            leftOsc: null,
+            rightOsc: null,
+            leftGain: null,
+            rightGain: null,
+            merger: null,
+            lfo: null,
+            lfoGain: null
+        };
+        this.ambientRunning = false;
+        
         // Audio settings
         this.config = {
             discoveryRange: {
@@ -37,7 +49,15 @@ class AudioSystem extends EventTarget {
             },
             ambient: {
                 cosmic: { volume: 0.2, frequency: 55 },   // Deep cosmic hum
-                ethereal: { volume: 0.15, frequency: 110 } // Ethereal presence
+                ethereal: { volume: 0.15, frequency: 110 }, // Ethereal presence
+                // BRDC-010-CALM: Calming background parameters
+                calm: {
+                    baseLeftHz: 432,     // Concert A alternative (softer feel)
+                    baseRightHz: 528,    // "Miracle" tone (pleasant, uplifting)
+                    binauralOffsetHz: 4, // Gentle ~4 Hz theta-like beat
+                    breathPeriodSec: 10, // Slow inhale/exhale cycle
+                    volume: 0.12         // Very subtle by default
+                }
             }
         };
         
@@ -66,6 +86,87 @@ class AudioSystem extends EventTarget {
         }
     }
     
+    /**
+     * Start calming ambient hum (layered 432/528Hz, soft binaural beat, slow breathing LFO)
+     */
+    startCalmingAmbient() {
+        if (!this.isEnabled || !this.audioContext || this.ambientRunning) return;
+        const ctx = this.audioContext;
+        const calm = this.config.ambient.calm;
+        
+        // Create channel merger for stereo
+        const merger = ctx.createChannelMerger(2);
+        
+        // Left channel: 432 Hz slightly detuned down by binauralOffset/2
+        const leftOsc = ctx.createOscillator();
+        leftOsc.type = 'sine';
+        leftOsc.frequency.value = calm.baseLeftHz - calm.binauralOffsetHz / 2;
+        const leftGain = ctx.createGain();
+        leftGain.gain.value = calm.volume * this.masterVolume;
+        leftOsc.connect(leftGain);
+        leftGain.connect(merger, 0, 0);
+        
+        // Right channel: 528 Hz slightly detuned up by binauralOffset/2
+        const rightOsc = ctx.createOscillator();
+        rightOsc.type = 'sine';
+        rightOsc.frequency.value = calm.baseRightHz + calm.binauralOffsetHz / 2;
+        const rightGain = ctx.createGain();
+        rightGain.gain.value = calm.volume * this.masterVolume;
+        rightOsc.connect(rightGain);
+        rightGain.connect(merger, 0, 1);
+        
+        // Slow breathing LFO that modulates both channel gains
+        const lfo = ctx.createOscillator();
+        lfo.type = 'sine';
+        lfo.frequency.value = 1 / calm.breathPeriodSec; // one full cycle per breathPeriodSec
+        const lfoGain = ctx.createGain();
+        lfoGain.gain.value = calm.volume * 0.3; // modulation depth (30% of base)
+        lfo.connect(lfoGain);
+        
+        // Apply LFO to left/right gains
+        lfoGain.connect(leftGain.gain);
+        lfoGain.connect(rightGain.gain);
+        
+        // Connect to destination
+        merger.connect(ctx.destination);
+        
+        // Start nodes
+        const now = ctx.currentTime;
+        leftOsc.start(now);
+        rightOsc.start(now);
+        lfo.start(now);
+        
+        // Save nodes for stop
+        this.ambientNodes = { leftOsc, rightOsc, leftGain, rightGain, merger, lfo, lfoGain };
+        this.ambientRunning = true;
+        this.log('🔊 Calming ambient started (432/528Hz, ~4Hz binaural, breathing LFO)');
+    }
+
+    /**
+     * Stop calming ambient hum
+     */
+    stopCalmingAmbient() {
+        if (!this.ambientRunning) return;
+        const { leftOsc, rightOsc, lfo, leftGain, rightGain, merger } = this.ambientNodes;
+        const ctx = this.audioContext;
+        const now = ctx.currentTime;
+        // Smooth fade out
+        try {
+            leftGain.gain.cancelScheduledValues(now);
+            rightGain.gain.cancelScheduledValues(now);
+            leftGain.gain.linearRampToValueAtTime(0, now + 0.8);
+            rightGain.gain.linearRampToValueAtTime(0, now + 0.8);
+        } catch {}
+        setTimeout(() => {
+            try { leftOsc.stop(); } catch {}
+            try { rightOsc.stop(); } catch {}
+            try { lfo.stop(); } catch {}
+            try { merger.disconnect(); } catch {}
+        }, 850);
+        this.ambientRunning = false;
+        this.log('🔇 Calming ambient stopped');
+    }
+
     /**
      * Play discovery proximity sound
      */

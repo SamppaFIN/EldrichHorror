@@ -79,6 +79,8 @@ class EldritchSanctuary {
             const audioInitialized = await this.systems.audio.initialize();
             if (audioInitialized) {
                 this.log('✓ AudioSystem initialized');
+                // BRDC-010-CALM: Start calming ambient after initialization
+                this.systems.audio.startCalmingAmbient();
             } else {
                 this.log('⚠️ AudioSystem failed to initialize, continuing without sound');
             }
