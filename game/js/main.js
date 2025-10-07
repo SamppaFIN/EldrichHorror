@@ -79,8 +79,12 @@ class EldritchSanctuary {
             const audioInitialized = await this.systems.audio.initialize();
             if (audioInitialized) {
                 this.log('✓ AudioSystem initialized');
-                // BRDC-010-CALM: Start calming ambient after initialization
-                this.systems.audio.startCalmingAmbient();
+                // BRDC-010-CALM: Start calming ambient if audio is ready
+                if (this.systems.audio.isEnabled) {
+                    this.systems.audio.startCalmingAmbient();
+                } else {
+                    this.log('⚠️ Audio suspended - will start after user interaction');
+                }
             } else {
                 this.log('⚠️ AudioSystem failed to initialize, continuing without sound');
             }
@@ -103,6 +107,9 @@ class EldritchSanctuary {
             
             // Set up event listeners
             this.setupEventListeners();
+            
+            // BRDC-010-CALM: Add map click handler for audio resume
+            this.setupMapAudioResume();
             
             // Start tracking
             this.systems.geolocation.startTracking();
@@ -232,6 +239,8 @@ class EldritchSanctuary {
         // Center on player button
         document.getElementById('center-map-btn')?.addEventListener('click', () => {
             this.systems.map.centerOnPlayer();
+            // BRDC-010-CALM: Resume audio on user interaction
+            this.resumeAudioIfNeeded();
         });
         
         // BRDC-007: Manual proximity check button
@@ -239,6 +248,8 @@ class EldritchSanctuary {
             if (this.systems.discovery) {
                 this.systems.discovery.manualProximityCheck();
             }
+            // BRDC-010-CALM: Resume audio on user interaction
+            this.resumeAudioIfNeeded();
         });
         
         // BRDC-007: Reshuffle discoveries button
@@ -246,6 +257,8 @@ class EldritchSanctuary {
             if (this.systems.discovery) {
                 this.systems.discovery.reshuffleDiscoveries();
             }
+            // BRDC-010-CALM: Resume audio on user interaction
+            this.resumeAudioIfNeeded();
         });
         
         // Codex button
@@ -603,6 +616,33 @@ class EldritchSanctuary {
     toggleSettings() {
         // TODO: Implement settings panel
         this.log('Settings panel (TODO)');
+    }
+    
+    /**
+     * Setup map click handler for audio resume
+     * BRDC-010-CALM: Handle autoplay policy
+     */
+    setupMapAudioResume() {
+        // Add click handler to map container
+        const mapContainer = document.getElementById('map');
+        if (mapContainer) {
+            mapContainer.addEventListener('click', () => {
+                this.resumeAudioIfNeeded();
+            });
+        }
+    }
+    
+    /**
+     * Resume audio if needed after user interaction
+     * BRDC-010-CALM: Handle autoplay policy
+     */
+    async resumeAudioIfNeeded() {
+        if (this.systems.audio && !this.systems.audio.isEnabled) {
+            const resumed = await this.systems.audio.resumeAudio();
+            if (resumed) {
+                this.log('🎵 Audio resumed after user interaction');
+            }
+        }
     }
     
     /**

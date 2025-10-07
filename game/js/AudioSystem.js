@@ -66,15 +66,18 @@ class AudioSystem extends EventTarget {
     
     /**
      * Initialize audio context
+     * BRDC-010-CALM: Made non-blocking for autoplay policies
      */
     async initialize() {
         try {
             // Create audio context
             this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
             
-            // Resume context if suspended (required for user interaction)
+            // Don't try to resume immediately - wait for user interaction
             if (this.audioContext.state === 'suspended') {
-                await this.audioContext.resume();
+                this.log('⚠️ Audio context suspended - waiting for user interaction');
+                this.isEnabled = false; // Disable until user interaction
+                return true; // Return true but audio won't work until resumed
             }
             
             this.log('✓ Audio context initialized');
@@ -82,6 +85,30 @@ class AudioSystem extends EventTarget {
         } catch (error) {
             this.log('❌ Audio initialization failed:', error);
             this.isEnabled = false;
+            return true; // Don't block game initialization
+        }
+    }
+    
+    /**
+     * Resume audio context after user interaction
+     * BRDC-010-CALM: Handle autoplay policy
+     */
+    async resumeAudio() {
+        if (!this.audioContext) return false;
+        
+        try {
+            if (this.audioContext.state === 'suspended') {
+                await this.audioContext.resume();
+                this.isEnabled = true;
+                this.log('✓ Audio context resumed after user interaction');
+                
+                // Start ambient after resume
+                this.startCalmingAmbient();
+                return true;
+            }
+            return true;
+        } catch (error) {
+            this.log('❌ Failed to resume audio:', error);
             return false;
         }
     }
