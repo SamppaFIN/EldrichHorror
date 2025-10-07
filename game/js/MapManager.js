@@ -394,6 +394,12 @@ class MapManager extends EventTarget {
         for (const [id, markerData] of this.markers.entries()) {
             if (type && markerData.type !== type) continue;
             
+            // BRDC-007: Safety check for marker existence
+            if (!markerData.marker || !markerData.marker.getLatLng) {
+                console.warn(`[MapManager] Marker ${id} has no valid marker object`);
+                continue;
+            }
+            
             const markerPos = markerData.marker.getLatLng();
             const distance = this.calculateDistance(
                 position.lat,

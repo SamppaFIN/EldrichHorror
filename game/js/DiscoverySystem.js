@@ -7,13 +7,14 @@
  */
 
 class DiscoverySystem extends EventTarget {
-    constructor(gameState, mapManager, consciousnessEngine, loreSystem) {
+    constructor(gameState, mapManager, consciousnessEngine, loreSystem, geolocationManager) {
         super();
         
         this.gameState = gameState;
         this.mapManager = mapManager;
         this.consciousness = consciousnessEngine;
         this.lore = loreSystem;
+        this.geolocation = geolocationManager; // BRDC-007: Add geolocation reference
         
         this.activeDiscoveries = new Map(); // id -> discovery
         this.collectedDiscoveries = new Set(); // Set of collected IDs

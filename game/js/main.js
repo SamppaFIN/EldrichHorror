@@ -79,7 +79,8 @@ class EldritchSanctuary {
                 this.systems.gameState,
                 this.systems.map,
                 this.systems.consciousness,
-                this.systems.lore
+                this.systems.lore,
+                this.systems.geolocation // BRDC-007: Add geolocation reference
             );
             
             // Initialize with player position (reuse initialPosition from above)
