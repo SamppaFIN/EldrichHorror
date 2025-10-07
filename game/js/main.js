@@ -89,6 +89,22 @@ class EldritchSanctuary {
                 this.log('⚠️ AudioSystem failed to initialize, continuing without sound');
             }
             
+            // Step Counter Manager - BRDC-STEP-COUNTER-008
+            this.systems.steps = new StepCounterManager({
+                defaultMode: 'device',
+                stepLengthMeters: GameConfig?.movement?.stepLengthMeters || 0.78,
+                simStepsPerSecond: 2
+            });
+            this.systems.steps.initialize();
+            this.systems.steps.start();
+            this.systems.steps.addEventListener('step', (e) => {
+                const { stepsAdded, totalSteps } = e.detail;
+                // Record steps in game state
+                this.systems.gameState.recordStep(stepsAdded * (GameConfig?.movement?.stepLengthMeters || 0.78));
+                // Update HUD
+                this.updateHUD();
+            });
+
             // Discovery System - BRDC-DISCOVERY-SYSTEM-005
             this.systems.discovery = new DiscoverySystem(
                 this.systems.gameState,
@@ -176,9 +192,9 @@ class EldritchSanctuary {
                 this.systems.discovery.update(position);
             }
             
-            // Check for steps
-            if (distance >= GameConfig.movement.stepThreshold) {
-                this.handleStep(distance);
+            // Steps via StepCounterManager (device/experimental)
+            if (this.systems.steps) {
+                this.systems.steps.handlePositionUpdate(distance);
             }
             
             // Check for nearby interactions
