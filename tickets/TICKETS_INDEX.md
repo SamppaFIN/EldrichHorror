@@ -3,7 +3,8 @@
 
 **Source**: `.factory-in/Klitoritarit/software-factory-2.0 – klitoritari/`  
 **Extracted**: October 6, 2025  
-**Total Tickets**: 7 (2 critical, 4 epics, 1 feature)
+**Updated**: October 6, 2025 (Mobile Testing Session)  
+**Total Tickets**: 10 (3 critical, 4 epics, 2 features, 1 bug)
 
 ---
 
@@ -131,6 +132,56 @@
 
 ---
 
+## 🔴 NEW CRITICAL BUGS (Mobile Testing - Oct 6)
+
+### **BUG 1: Discovery Proximity Not Triggering** 🔴 OPEN
+- **ID**: `BRDC-DISCOVERY-PROXIMITY-007`
+- **Status**: 🔴 RED PHASE
+- **Priority**: 🔴 CRITICAL
+- **Device**: Samsung S23U
+- **Estimated Effort**: 4-6 hours
+- **Ticket File**: `tickets/bugs/BRDC-DISCOVERY-PROXIMITY-007.md`
+
+**Problem**: Auto-collection not triggering on mobile despite being within range
+
+**User Report**: "I was at correct gps position on the map, accuracy 7m - the discoveries didn't trigger"
+
+**Proposed Solutions**:
+1. Add visual proximity indicators (red/yellow/green/star glow)
+2. Increase collection range from 10m to 15m (account for GPS accuracy)
+3. Add debug logging for mobile
+4. Add manual proximity check button
+5. Add reshuffle discoveries button
+
+**Files to Modify**:
+- `game/js/DiscoverySystem.js`
+- `game/css/cosmic-theme.css`
+- `game/index.html`
+
+---
+
+### **BUG 2: Step Counter Not Working** 🟡 OPEN
+- **ID**: `BRDC-STEP-COUNTER-008`
+- **Status**: 🔴 RED PHASE
+- **Priority**: 🟡 HIGH
+- **Device**: Samsung S23U
+- **Estimated Effort**: 6-8 hours
+- **Ticket File**: `tickets/bugs/BRDC-STEP-COUNTER-008.md`
+
+**Problem**: Step counter not functional on mobile
+
+**User Request**: "Make me a way to toggle between simulation (+2 per second), Device and Experimental mode (Gyroscope + distance calculated between 2 last known positions and a timestamp)"
+
+**Required Modes**:
+1. **Simulation**: +2 steps/second (testing)
+2. **Device**: Use device pedometer or GPS fallback
+3. **Experimental**: Gyroscope + accelerometer + GPS hybrid
+
+**Files to Create**:
+- `game/js/StepCounterManager.js`
+
+---
+
 ## 🔵 FEATURES
 
 ### **FEATURE 1: Discovery System** ✅ IMPLEMENTED
@@ -151,6 +202,37 @@
 - CSS: Notification and discovery marker styles
 
 **Status**: ✅ All files created and integrated, ready for testing
+
+---
+
+### **FEATURE 2: Eldritch Encounter System** 🟣 NEW
+- **ID**: `BRDC-ELDRITCH-ENCOUNTER-009`
+- **Status**: 🔴 RED PHASE
+- **Priority**: 🟣 EPIC
+- **Requested By**: ♾️ Infinite
+- **Estimated Effort**: 12-16 hours
+- **Ticket File**: `tickets/features/BRDC-ELDRITCH-ENCOUNTER-009.md`
+
+**Feature**: Scary entity that slowly approaches player with escalating warnings
+
+**User Request**: "I want some scary thing on the screen who is slowly approaching the player position, when it is within 1000m 100m 10m make a notice.. Make that encounter Heavy"
+
+**Design**:
+- Entity spawns 1000-2000m away
+- Approaches at 6m/minute (slow, inexorable)
+- Warnings at: 1000m, 100m, 10m, 0m
+- Heavy horror atmosphere with screen effects
+- Choice-based encounter resolution
+- High-risk, high-reward outcomes
+
+**Implementation**:
+- EldritchEncounterManager.js: Core encounter system
+- Visual: Shadowy entity with tentacles, grows as it approaches
+- Audio: Ambient dread, heartbeat, terror sounds
+- Effects: Screen darkening, distortion, shaking
+- Modal: Full-screen encounter with 4 choices
+
+**Status**: 🔴 Design complete, awaiting implementation
 
 ---
 

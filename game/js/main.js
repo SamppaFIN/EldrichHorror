@@ -221,6 +221,20 @@ class EldritchSanctuary {
             this.systems.map.centerOnPlayer();
         });
         
+        // BRDC-007: Manual proximity check button
+        document.getElementById('check-proximity-btn')?.addEventListener('click', () => {
+            if (this.systems.discovery) {
+                this.systems.discovery.manualProximityCheck();
+            }
+        });
+        
+        // BRDC-007: Reshuffle discoveries button
+        document.getElementById('reshuffle-discoveries-btn')?.addEventListener('click', () => {
+            if (this.systems.discovery) {
+                this.systems.discovery.reshuffleDiscoveries();
+            }
+        });
+        
         // Codex button
         document.getElementById('codex-btn')?.addEventListener('click', () => {
             this.showModal('codex-modal');

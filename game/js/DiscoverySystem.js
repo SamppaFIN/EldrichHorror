@@ -20,7 +20,7 @@ class DiscoverySystem extends EventTarget {
         
         // Configuration
         this.config = {
-            collectionRange: 10, // meters
+            collectionRange: 15, // BRDC-007: Increased from 10m to 15m for GPS accuracy
             spawnRadius: { min: 50, max: 200 }, // meters from player
             spawnCount: { min: 5, max: 10 },
             rarityWeights: {
@@ -28,6 +28,13 @@ class DiscoverySystem extends EventTarget {
                 uncommon: 0.20,  // 20%
                 rare: 0.08,      // 8%
                 epic: 0.02       // 2%
+            },
+            // BRDC-007: Proximity indicator thresholds
+            proximityThresholds: {
+                far: 100,   // Red glow
+                near: 20,   // Yellow glow
+                close: 5,   // Green glow
+                ready: 1    // Star flash
             }
         };
         
@@ -192,21 +199,99 @@ class DiscoverySystem extends EventTarget {
     
     /**
      * Update system - check for nearby discoveries
+     * BRDC-007: Added proximity visual indicators
      */
     update(playerPosition) {
         if (!playerPosition) return;
+        
+        this.log(`📱 Update - checking ${this.activeDiscoveries.size} discoveries`);
         
         // Check each active discovery
         this.activeDiscoveries.forEach(discovery => {
             if (!discovery.collected) {
                 const distance = this.calculateDistance(playerPosition, discovery.position);
                 
+                // BRDC-007: Update proximity visuals
+                this.updateProximityVisuals(discovery, distance);
+                
+                // Log distance for debugging
+                if (distance <= this.config.proximityThresholds.far) {
+                    this.log(`📏 ${discovery.type.name}: ${distance.toFixed(1)}m away`);
+                }
+                
                 // Within collection range?
                 if (distance <= this.config.collectionRange) {
+                    this.log(`🎯 WITHIN RANGE! Collecting ${discovery.type.name}`);
                     this.collectDiscovery(discovery, playerPosition);
                 }
             }
         });
+    }
+    
+    /**
+     * Update proximity visual indicators
+     * BRDC-007: Visual feedback for player
+     */
+    updateProximityVisuals(discovery, distance) {
+        const marker = this.mapManager.markers.get(discovery.id);
+        if (!marker || !marker._icon) return;
+        
+        const element = marker._icon;
+        const thresholds = this.config.proximityThresholds;
+        
+        // Remove all proximity classes
+        element.classList.remove('proximity-far', 'proximity-near', 
+                                 'proximity-close', 'proximity-ready');
+        
+        // Add appropriate class based on distance
+        if (distance <= thresholds.ready) {
+            element.classList.add('proximity-ready');
+            this.addProximityInfo(element, distance, 'READY TO COLLECT!');
+        } else if (distance <= thresholds.close) {
+            element.classList.add('proximity-close');
+            this.addProximityInfo(element, distance, 'Very Close');
+        } else if (distance <= thresholds.near) {
+            element.classList.add('proximity-near');
+            this.addProximityInfo(element, distance, 'Nearby');
+        } else if (distance <= thresholds.far) {
+            element.classList.add('proximity-far');
+            this.addProximityInfo(element, distance, 'Detected');
+        } else {
+            this.removeProximityInfo(element);
+        }
+    }
+    
+    /**
+     * Add distance info overlay to marker
+     */
+    addProximityInfo(element, distance, status) {
+        let info = element.querySelector('.proximity-info');
+        if (!info) {
+            info = document.createElement('div');
+            info.className = 'proximity-info';
+            element.appendChild(info);
+        }
+        
+        // Determine proximity class
+        const thresholds = this.config.proximityThresholds;
+        let proximityClass = '';
+        if (distance <= thresholds.ready) proximityClass = 'ready';
+        else if (distance <= thresholds.close) proximityClass = 'close';
+        else if (distance <= thresholds.near) proximityClass = 'near';
+        else proximityClass = 'far';
+        
+        info.className = `proximity-info ${proximityClass}`;
+        info.textContent = `${distance.toFixed(0)}m - ${status}`;
+    }
+    
+    /**
+     * Remove proximity info overlay
+     */
+    removeProximityInfo(element) {
+        const info = element.querySelector('.proximity-info');
+        if (info) {
+            info.remove();
+        }
     }
     
     /**
@@ -362,6 +447,88 @@ class DiscoverySystem extends EventTarget {
         });
         
         console.log('💡 To collect nearest: game.systems.discovery.testCollectNearest()');
+    }
+    
+    /**
+     * BRDC-007: Reshuffle discoveries
+     * Clears current discoveries and spawns new ones
+     */
+    reshuffleDiscoveries() {
+        this.log('🔄 Reshuffling discoveries...');
+        
+        // Get current position
+        const position = this.geolocation?.getPosition();
+        if (!position) {
+            this.log('❌ No position available for reshuffle');
+            if (window.notificationSystem) {
+                window.notificationSystem.show('Cannot reshuffle - waiting for GPS', 'warning');
+            }
+            return;
+        }
+        
+        // Clear existing discoveries
+        const count = this.activeDiscoveries.size;
+        this.activeDiscoveries.forEach(discovery => {
+            if (this.mapManager && typeof this.mapManager.removeDiscoveryMarker === 'function') {
+                this.mapManager.removeDiscoveryMarker(discovery.id);
+            }
+        });
+        this.activeDiscoveries.clear();
+        
+        // Spawn new discoveries
+        this.spawnDiscoveries(position);
+        
+        this.log(`✅ Reshuffled ${count} → ${this.activeDiscoveries.size} discoveries`);
+        if (window.notificationSystem) {
+            window.notificationSystem.show(
+                `🔄 Discoveries Reshuffled!\n${this.activeDiscoveries.size} new discoveries spawned`, 
+                'success'
+            );
+        }
+    }
+    
+    /**
+     * BRDC-007: Manual proximity check
+     * Forces a proximity check for all discoveries
+     */
+    manualProximityCheck() {
+        const position = this.geolocation?.getPosition();
+        if (!position) {
+            this.log('❌ No position available');
+            if (window.notificationSystem) {
+                window.notificationSystem.show('Waiting for GPS position...', 'warning');
+            }
+            return;
+        }
+        
+        this.log('🎯 Manual proximity check triggered');
+        this.update(position);
+        
+        // Show feedback
+        const nearby = [];
+        this.activeDiscoveries.forEach(discovery => {
+            if (!discovery.collected) {
+                const distance = this.calculateDistance(position, discovery.position);
+                if (distance <= this.config.proximityThresholds.far) {
+                    nearby.push({ discovery, distance });
+                }
+            }
+        });
+        
+        if (nearby.length > 0) {
+            nearby.sort((a, b) => a.distance - b.distance);
+            const nearest = nearby[0];
+            if (window.notificationSystem) {
+                window.notificationSystem.show(
+                    `🔍 Nearest: ${nearest.discovery.type.icon} ${nearest.discovery.type.name}\n${nearest.distance.toFixed(1)}m away`,
+                    'info'
+                );
+            }
+        } else {
+            if (window.notificationSystem) {
+                window.notificationSystem.show('No discoveries within 100m', 'info');
+            }
+        }
     }
     
     /**
