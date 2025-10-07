@@ -757,7 +757,10 @@ class EldritchSanctuary {
         if (stepsEl) stepsEl.textContent = stats.steps;
         
         const achievementsEl = document.getElementById('achievements-count');
-        if (achievementsEl) achievementsEl.textContent = stats.totalEncounters;
+        if (achievementsEl) {
+            const totalDiscoveries = this.systems.gameState.getState().player.totalDiscoveries;
+            achievementsEl.textContent = totalDiscoveries;
+        }
     }
     
     /**
