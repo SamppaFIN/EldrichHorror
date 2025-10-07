@@ -296,6 +296,212 @@ class EldritchSanctuary {
             this.hideModal('tutorial-modal');
             document.getElementById('game-container')?.classList.remove('hidden');
         });
+        
+        // Testing panel event listeners
+        this.setupTestingPanelListeners();
+    }
+    
+    /**
+     * Set up testing panel event listeners
+     */
+    setupTestingPanelListeners() {
+        // Close/minimize button
+        const testingClose = document.getElementById('testing-close');
+        if (testingClose) {
+            testingClose.addEventListener('click', () => {
+                this.toggleTestingPanel(false);
+            });
+        }
+        
+        // GPS Simulator controls
+        const simStart = document.getElementById('sim-start');
+        const simPause = document.getElementById('sim-pause');
+        const simStop = document.getElementById('sim-stop');
+        
+        if (simStart) {
+            simStart.addEventListener('click', () => {
+                this.startGPSSimulator();
+            });
+        }
+        
+        if (simPause) {
+            simPause.addEventListener('click', () => {
+                this.pauseGPSSimulator();
+            });
+        }
+        
+        if (simStop) {
+            simStop.addEventListener('click', () => {
+                this.stopGPSSimulator();
+            });
+        }
+        
+        // Manual direction controls
+        document.getElementById('dir-north')?.addEventListener('click', () => {
+            this.moveSimulator(0); // North
+        });
+        
+        document.getElementById('dir-east')?.addEventListener('click', () => {
+            this.moveSimulator(90); // East
+        });
+        
+        document.getElementById('dir-south')?.addEventListener('click', () => {
+            this.moveSimulator(180); // South
+        });
+        
+        document.getElementById('dir-west')?.addEventListener('click', () => {
+            this.moveSimulator(270); // West
+        });
+        
+        // Speed slider
+        const speedSlider = document.getElementById('speed-slider');
+        const speedValue = document.getElementById('speed-value');
+        
+        if (speedSlider && speedValue) {
+            speedSlider.addEventListener('input', (e) => {
+                const speed = parseFloat(e.target.value);
+                speedValue.textContent = `${speed.toFixed(1)} m/s`;
+                if (this.gpsSimulator) {
+                    this.gpsSimulator.setSpeed(speed);
+                }
+            });
+        }
+    }
+    
+    /**
+     * Toggle testing panel visibility
+     */
+    toggleTestingPanel(show = null) {
+        const panel = document.getElementById('testing-panel');
+        if (!panel) return;
+        
+        if (show === null) {
+            // Toggle
+            panel.classList.toggle('hidden');
+        } else if (show) {
+            // Show
+            panel.classList.remove('hidden');
+        } else {
+            // Hide and disable testing mode
+            panel.classList.add('hidden');
+            GameConfig.testingMode = false;
+            
+            // Stop simulator if running
+            if (this.gpsSimulator && this.gpsSimulator.isMoving) {
+                this.stopGPSSimulator();
+            }
+            
+            this.showNotification('Testing mode disabled', 'info');
+        }
+    }
+    
+    /**
+     * Start GPS Simulator
+     */
+    startGPSSimulator() {
+        if (!GameConfig.testingMode) {
+            GameConfig.testingMode = true;
+        }
+        
+        // Create simulator if it doesn't exist
+        if (!this.gpsSimulator) {
+            this.gpsSimulator = new GPSSimulator(GameConfig.geolocation.simulator);
+            
+            // Listen to simulator position updates
+            this.gpsSimulator.addEventListener('positionupdate', (e) => {
+                const positionData = e.detail;
+                const position = {
+                    lat: positionData.coords.latitude,
+                    lng: positionData.coords.longitude
+                };
+                
+                // Dispatch as if from real geolocation
+                const distance = this.calculateDistanceFromPrevious(position);
+                this.systems.geolocation.dispatchEvent(new CustomEvent('positionupdate', {
+                    detail: { position, distance }
+                }));
+            });
+        }
+        
+        // Get current position or use default
+        const startPos = this.systems.geolocation.getPosition() || {
+            lat: GameConfig.map.defaultCenter[0],
+            lng: GameConfig.map.defaultCenter[1]
+        };
+        
+        this.gpsSimulator.start(startPos);
+        this.showNotification('🚶 Auto-walk started', 'success');
+        this.log('GPS Simulator started');
+    }
+    
+    /**
+     * Pause GPS Simulator
+     */
+    pauseGPSSimulator() {
+        if (!this.gpsSimulator) return;
+        
+        const isPaused = this.gpsSimulator.togglePause();
+        this.showNotification(isPaused ? '⏸️ Paused' : '▶️ Resumed', 'info');
+    }
+    
+    /**
+     * Stop GPS Simulator
+     */
+    stopGPSSimulator() {
+        if (!this.gpsSimulator) return;
+        
+        this.gpsSimulator.stop();
+        this.showNotification('⏹️ Auto-walk stopped', 'info');
+        this.log('GPS Simulator stopped');
+    }
+    
+    /**
+     * Move simulator in specific direction
+     */
+    moveSimulator(direction) {
+        if (!this.gpsSimulator) {
+            // Create and start simulator if not exists
+            this.startGPSSimulator();
+        }
+        
+        if (this.gpsSimulator && !this.gpsSimulator.isMoving) {
+            this.startGPSSimulator();
+        }
+        
+        if (this.gpsSimulator) {
+            this.gpsSimulator.moveDirection(direction);
+        }
+    }
+    
+    /**
+     * Calculate distance from previous position
+     */
+    calculateDistanceFromPrevious(newPosition) {
+        const prevPos = this.systems.geolocation.previousPosition;
+        if (!prevPos) return 0;
+        
+        return this.haversineDistance(
+            prevPos.lat, prevPos.lng,
+            newPosition.lat, newPosition.lng
+        );
+    }
+    
+    /**
+     * Haversine distance calculation
+     */
+    haversineDistance(lat1, lng1, lat2, lng2) {
+        const R = 6371000; // Earth's radius in meters
+        const φ1 = lat1 * Math.PI / 180;
+        const φ2 = lat2 * Math.PI / 180;
+        const Δφ = (lat2 - lat1) * Math.PI / 180;
+        const Δλ = (lng2 - lng1) * Math.PI / 180;
+        
+        const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+                  Math.cos(φ1) * Math.cos(φ2) *
+                  Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        
+        return R * c;
     }
     
     /**

@@ -9,7 +9,7 @@ const GameConfig = {
     
     // OFFLINE/TESTING MODE - Set true to play without internet
     offlineMode: false, // Auto-detected if no connection
-    testingMode: false,  // Manual override for full testing features
+    testingMode: false,  // Set true to enable testing panel (desktop testing)
     
     // Map Settings
     map: {
