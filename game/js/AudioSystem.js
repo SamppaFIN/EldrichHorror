@@ -29,9 +29,26 @@ class AudioSystem extends EventTarget {
             rightGain: null,
             merger: null,
             lfo: null,
-            lfoGain: null
+            lfoGain: null,
+            noise: null,
+            noiseGain: null,
+            noiseFilter: null
         };
         this.ambientRunning = false;
+        
+        // Ambient preset library (AngelicWaves-inspired)
+        // Volumes are intentionally very low to avoid fatigue
+        this.ambientLibrary = {
+            // Requested: keep the current strong binaural as a utility preset
+            disconnectPhoneHum: { leftHz: 432, rightHz: 528, offsetHz: 4.0, breathSec: 8, volume: 0.06, noise: 0.0 },
+            // Softer alpha-like state, minimal binaural offset
+            calmAlpha:           { leftHz: 396, rightHz: 396.5, offsetHz: 0.5, breathSec: 12, volume: 0.035, noise: 0.01 },
+            // Deep grounding delta-like
+            calmDelta:           { leftHz: 174, rightHz: 174.4, offsetHz: 0.4, breathSec: 14, volume: 0.030, noise: 0.015 },
+            // Heart-centered gentle uplift
+            calmHeart:           { leftHz: 528, rightHz: 528.5, offsetHz: 0.5, breathSec: 10, volume: 0.030, noise: 0.012 }
+        };
+        this.currentAmbientPreset = null;
         
         // Audio settings
         this.config = {
@@ -116,43 +133,69 @@ class AudioSystem extends EventTarget {
     /**
      * Start calming ambient hum (layered 432/528Hz, soft binaural beat, slow breathing LFO)
      */
-    startCalmingAmbient() {
+    startCalmingAmbient(presetName = 'calmAlpha') {
         if (!this.isEnabled || !this.audioContext || this.ambientRunning) return;
         const ctx = this.audioContext;
-        const calm = this.config.ambient.calm;
+        const preset = this.ambientLibrary[presetName] || this.ambientLibrary.calmAlpha;
+        this.currentAmbientPreset = presetName;
         
         // Create channel merger for stereo
         const merger = ctx.createChannelMerger(2);
         
-        // Left channel: 432 Hz slightly detuned down by binauralOffset/2
+        // Left channel oscillator
         const leftOsc = ctx.createOscillator();
         leftOsc.type = 'sine';
-        leftOsc.frequency.value = calm.baseLeftHz - calm.binauralOffsetHz / 2;
+        leftOsc.frequency.value = preset.leftHz - preset.offsetHz / 2;
         const leftGain = ctx.createGain();
-        leftGain.gain.value = calm.volume * this.masterVolume;
+        leftGain.gain.value = preset.volume * this.masterVolume;
         leftOsc.connect(leftGain);
         leftGain.connect(merger, 0, 0);
         
-        // Right channel: 528 Hz slightly detuned up by binauralOffset/2
+        // Right channel oscillator
         const rightOsc = ctx.createOscillator();
         rightOsc.type = 'sine';
-        rightOsc.frequency.value = calm.baseRightHz + calm.binauralOffsetHz / 2;
+        rightOsc.frequency.value = preset.rightHz + preset.offsetHz / 2;
         const rightGain = ctx.createGain();
-        rightGain.gain.value = calm.volume * this.masterVolume;
+        rightGain.gain.value = preset.volume * this.masterVolume;
         rightOsc.connect(rightGain);
         rightGain.connect(merger, 0, 1);
         
         // Slow breathing LFO that modulates both channel gains
         const lfo = ctx.createOscillator();
         lfo.type = 'sine';
-        lfo.frequency.value = 1 / calm.breathPeriodSec; // one full cycle per breathPeriodSec
+        lfo.frequency.value = 1 / preset.breathSec; // one full cycle per breath period
         const lfoGain = ctx.createGain();
-        lfoGain.gain.value = calm.volume * 0.3; // modulation depth (30% of base)
+        lfoGain.gain.value = preset.volume * 0.4; // modulation depth
         lfo.connect(lfoGain);
         
         // Apply LFO to left/right gains
         lfoGain.connect(leftGain.gain);
         lfoGain.connect(rightGain.gain);
+        
+        // Very subtle pink-like noise with lowpass for warmth (optional)
+        let noise = null, noiseGain = null, noiseFilter = null;
+        if (preset.noise && preset.noise > 0) {
+            // Simple noise source via buffer
+            const bufferSize = 2 * ctx.sampleRate;
+            const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+            const output = noiseBuffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                // Pink-ish noise: filter white a little by averaging
+                const white = Math.random() * 2 - 1;
+                output[i] = (output[i - 1] || 0) * 0.98 + white * 0.02;
+            }
+            noise = ctx.createBufferSource();
+            noise.buffer = noiseBuffer;
+            noise.loop = true;
+            noiseFilter = ctx.createBiquadFilter();
+            noiseFilter.type = 'lowpass';
+            noiseFilter.frequency.value = 400; // soft rumble
+            noiseGain = ctx.createGain();
+            noiseGain.gain.value = preset.noise * this.masterVolume;
+            noise.connect(noiseFilter);
+            noiseFilter.connect(noiseGain);
+            noiseGain.connect(ctx.destination);
+        }
         
         // Connect to destination
         merger.connect(ctx.destination);
@@ -162,11 +205,12 @@ class AudioSystem extends EventTarget {
         leftOsc.start(now);
         rightOsc.start(now);
         lfo.start(now);
+        if (noise) noise.start(now);
         
         // Save nodes for stop
-        this.ambientNodes = { leftOsc, rightOsc, leftGain, rightGain, merger, lfo, lfoGain };
+        this.ambientNodes = { leftOsc, rightOsc, leftGain, rightGain, merger, lfo, lfoGain, noise, noiseGain, noiseFilter };
         this.ambientRunning = true;
-        this.log('🔊 Calming ambient started (432/528Hz, ~4Hz binaural, breathing LFO)');
+        this.log(`🔊 Calming ambient started (preset: ${presetName})`);
     }
 
     /**
@@ -174,7 +218,7 @@ class AudioSystem extends EventTarget {
      */
     stopCalmingAmbient() {
         if (!this.ambientRunning) return;
-        const { leftOsc, rightOsc, lfo, leftGain, rightGain, merger } = this.ambientNodes;
+        const { leftOsc, rightOsc, lfo, leftGain, rightGain, merger, noise, noiseGain } = this.ambientNodes;
         const ctx = this.audioContext;
         const now = ctx.currentTime;
         // Smooth fade out
@@ -183,15 +227,48 @@ class AudioSystem extends EventTarget {
             rightGain.gain.cancelScheduledValues(now);
             leftGain.gain.linearRampToValueAtTime(0, now + 0.8);
             rightGain.gain.linearRampToValueAtTime(0, now + 0.8);
+            if (noiseGain) {
+                noiseGain.gain.cancelScheduledValues(now);
+                noiseGain.gain.linearRampToValueAtTime(0, now + 0.8);
+            }
         } catch {}
         setTimeout(() => {
             try { leftOsc.stop(); } catch {}
             try { rightOsc.stop(); } catch {}
             try { lfo.stop(); } catch {}
+            try { if (noise) noise.stop(); } catch {}
             try { merger.disconnect(); } catch {}
         }, 850);
         this.ambientRunning = false;
         this.log('🔇 Calming ambient stopped');
+    }
+
+    /**
+     * Simple harmonic sequence player (uses gentle sine tones)
+     * sequence: [{ freq: number, duration: ms, volume?: 0-1 }]
+     */
+    async playHarmonicSequence(sequence = []) {
+        if (!this.audioContext || !this.isEnabled) return;
+        const ctx = this.audioContext;
+        let t = ctx.currentTime;
+        for (const note of sequence) {
+            const osc = ctx.createOscillator();
+            const g = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.value = note.freq;
+            g.gain.value = 0;
+            osc.connect(g);
+            g.connect(ctx.destination);
+            // small envelope per note
+            const v = (note.volume ?? 0.05) * this.masterVolume;
+            g.gain.setValueAtTime(0, t);
+            g.gain.linearRampToValueAtTime(v, t + 0.05);
+            g.gain.linearRampToValueAtTime(v * 0.7, t + (note.duration / 1000) - 0.1);
+            g.gain.linearRampToValueAtTime(0, t + (note.duration / 1000));
+            osc.start(t);
+            osc.stop(t + (note.duration / 1000));
+            t += (note.duration / 1000) * 0.98; // slight overlap
+        }
     }
 
     /**
