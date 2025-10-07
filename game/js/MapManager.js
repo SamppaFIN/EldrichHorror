@@ -391,16 +391,20 @@ class MapManager extends EventTarget {
     getMarkersInRadius(position, radiusMeters, type = null) {
         const results = [];
         
-        for (const [id, markerData] of this.markers.entries()) {
-            if (type && markerData.type !== type) continue;
+        for (const [id, entry] of this.markers.entries()) {
+            // Support both shapes: direct Leaflet marker or { marker, type, data }
+            const markerObj = entry && typeof entry.getLatLng === 'function' ? entry : entry?.marker;
+            const entryType = entry?.type || 'unknown';
             
-            // BRDC-007: Safety check for marker existence
-            if (!markerData.marker || !markerData.marker.getLatLng) {
+            if (type && entryType !== type) continue;
+            
+            // Safety check for marker existence
+            if (!markerObj || typeof markerObj.getLatLng !== 'function') {
                 console.warn(`[MapManager] Marker ${id} has no valid marker object`);
                 continue;
             }
             
-            const markerPos = markerData.marker.getLatLng();
+            const markerPos = markerObj.getLatLng();
             const distance = this.calculateDistance(
                 position.lat,
                 position.lng,
@@ -409,11 +413,7 @@ class MapManager extends EventTarget {
             );
             
             if (distance <= radiusMeters) {
-                results.push({
-                    id,
-                    ...markerData,
-                    distance
-                });
+                results.push({ id, marker: markerObj, type: entryType, data: entry?.data, distance });
             }
         }
         
