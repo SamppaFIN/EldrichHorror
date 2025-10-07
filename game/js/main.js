@@ -513,6 +513,13 @@ class EldritchSanctuary {
                 loadingScreen.style.opacity = '1';
             }, 500);
         }
+        
+        // BRDC-007: Ensure game container is visible
+        const gameContainer = document.getElementById('game-container');
+        if (gameContainer) {
+            gameContainer.classList.remove('hidden');
+            gameContainer.style.display = 'block';
+        }
     }
     
     /**
@@ -607,7 +614,33 @@ document.addEventListener('DOMContentLoaded', async () => {
     game = new EldritchSanctuary();
     window.game = game; // Make available globally for onclick handlers
     
-    await game.initialize();
+    // BRDC-007: Fallback timeout to ensure game shows
+    const fallbackTimeout = setTimeout(() => {
+        console.log('⚠️ Fallback: Forcing game to show after 10 seconds');
+        const loadingScreen = document.getElementById('loading-screen');
+        const gameContainer = document.getElementById('game-container');
+        if (loadingScreen) loadingScreen.classList.add('hidden');
+        if (gameContainer) {
+            gameContainer.classList.remove('hidden');
+            gameContainer.style.display = 'block';
+        }
+    }, 10000);
+    
+    try {
+        await game.initialize();
+        clearTimeout(fallbackTimeout); // Clear fallback if initialization succeeds
+    } catch (error) {
+        console.error('Initialization failed:', error);
+        clearTimeout(fallbackTimeout);
+        // Force show game even on error
+        const loadingScreen = document.getElementById('loading-screen');
+        const gameContainer = document.getElementById('game-container');
+        if (loadingScreen) loadingScreen.classList.add('hidden');
+        if (gameContainer) {
+            gameContainer.classList.remove('hidden');
+            gameContainer.style.display = 'block';
+        }
+    }
 });
 
 // Handle page visibility (pause when hidden)

@@ -6,10 +6,12 @@
 
 .loading-screen.hidden {
     display: none !important;
+    opacity: 0 !important;
 }
 
 #game-container {
     z-index: 1;
+    display: block !important; /* BRDC-007: Ensure game container is always visible */
 }
 
 /* Map Container Fix */
