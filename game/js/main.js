@@ -297,8 +297,11 @@ class EldritchSanctuary {
             document.getElementById('game-container')?.classList.remove('hidden');
         });
         
-        // Testing panel event listeners
-        this.setupTestingPanelListeners();
+        // Testing panel event listeners (only if testing mode enabled)
+        if (GameConfig.testingMode) {
+            this.setupTestingPanelListeners();
+            this.showTestingPanel();
+        }
     }
     
     /**
@@ -369,6 +372,17 @@ class EldritchSanctuary {
     }
     
     /**
+     * Show testing panel (for desktop testing)
+     */
+    showTestingPanel() {
+        const panel = document.getElementById('testing-panel');
+        if (!panel) return;
+        
+        panel.style.display = 'block';
+        panel.classList.remove('hidden');
+    }
+    
+    /**
      * Toggle testing panel visibility
      */
     toggleTestingPanel(show = null) {
@@ -380,9 +394,11 @@ class EldritchSanctuary {
             panel.classList.toggle('hidden');
         } else if (show) {
             // Show
+            panel.style.display = 'block';
             panel.classList.remove('hidden');
         } else {
             // Hide and stop simulator
+            panel.style.display = 'none';
             panel.classList.add('hidden');
             
             // Stop simulator if running
