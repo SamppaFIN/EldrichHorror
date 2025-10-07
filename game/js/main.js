@@ -382,16 +382,15 @@ class EldritchSanctuary {
             // Show
             panel.classList.remove('hidden');
         } else {
-            // Hide and disable testing mode
+            // Hide and stop simulator
             panel.classList.add('hidden');
-            GameConfig.testingMode = false;
             
             // Stop simulator if running
             if (this.gpsSimulator && this.gpsSimulator.isMoving) {
                 this.stopGPSSimulator();
             }
             
-            this.showNotification('Testing mode disabled', 'info');
+            this.showNotification('Testing panel closed', 'info');
         }
     }
     
@@ -399,10 +398,6 @@ class EldritchSanctuary {
      * Start GPS Simulator
      */
     startGPSSimulator() {
-        if (!GameConfig.testingMode) {
-            GameConfig.testingMode = true;
-        }
-        
         // Create simulator if it doesn't exist
         if (!this.gpsSimulator) {
             this.gpsSimulator = new GPSSimulator(GameConfig.geolocation.simulator);
