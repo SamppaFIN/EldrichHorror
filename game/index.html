@@ -6,6 +6,19 @@
     <meta name="description" content="Eldritch Sanctuary - A consciousness-aware cosmic exploration game">
     <title>Eldritch Sanctuary - Klitoritari</title>
     
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="icon" type="image/png" href="favicon.ico">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#8B5CF6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Eldritch Sanctuary">
+    
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
@@ -343,7 +356,7 @@
                         <span class="feature-text">Evolve consciousness</span>
                     </div>
                 </div>
-                <button class="action-button primary large" id="start-journey-btn">
+                <button class="action-button primary large" id="start-journey-btn" onclick="if(window.beginJourney) window.beginJourney(); else console.log('Begin journey function not available');">
                     Begin Your Journey
                 </button>
                 <p class="tutorial-note">

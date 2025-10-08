@@ -228,6 +228,63 @@ body.cosmic-background::before {
 }
 
 /* ===================================
+   PROXIMITY INDICATOR
+   =================================== */
+
+.proximity-indicator {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    background: rgba(139, 92, 246, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 12px;
+    padding: 12px;
+    min-width: 200px;
+    font-family: 'Inter', sans-serif;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.proximity-header {
+    font-size: 14px;
+    font-weight: 600;
+    color: #fbbf24;
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+.proximity-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 0;
+    border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.proximity-item:last-child {
+    border-bottom: none;
+}
+
+.proximity-color {
+    font-size: 16px;
+    margin-right: 8px;
+}
+
+.proximity-type {
+    flex: 1;
+    font-size: 12px;
+    color: #e5e7eb;
+    font-weight: 500;
+}
+
+.proximity-distance {
+    font-size: 12px;
+    color: #9ca3af;
+    font-weight: 600;
+}
+
+/* ===================================
    TOP HUD
    =================================== */
 
@@ -421,6 +478,9 @@ body.cosmic-background::before {
     max-height: 80vh;
     overflow-y: auto;
     padding: var(--spacing-lg);
+    display: block;
+    visibility: visible;
+    opacity: 1;
 }
 
 .modal-header {
@@ -460,6 +520,9 @@ body.cosmic-background::before {
 
 .modal-body {
     padding: var(--spacing-sm) 0;
+    display: block;
+    visibility: visible;
+    opacity: 1;
 }
 
 /* ===================================
@@ -768,11 +831,183 @@ body.cosmic-background::before {
 
 .discovery-marker {
     cursor: pointer;
-    transition: transform 0.3s ease;
+    transition: all 0.3s ease;
+    font-size: 20px;
+    text-align: center;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+    animation: discoveryPulse 2s infinite;
+    position: relative;
+}
+
+.discovery-marker::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    right: -5px;
+    bottom: -5px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+    background-size: 400% 400%;
+    animation: discoveryGlow 3s ease-in-out infinite;
+    z-index: -1;
+    opacity: 0.6;
+}
+
+@keyframes discoveryPulse {
+    0%, 100% { 
+        transform: scale(1);
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+    }
+    50% { 
+        transform: scale(1.1);
+        box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+    }
+}
+
+@keyframes discoveryGlow {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
 }
 
 .discovery-marker:hover {
     transform: scale(1.1);
+}
+
+.player-marker {
+    font-size: 30px;
+    text-align: center;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    border: 3px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+    animation: playerPulse 2s infinite;
+    position: relative;
+    z-index: 1000;
+}
+
+.player-marker::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: -8px;
+    right: -8px;
+    bottom: -8px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #ffd700, #ff6b6b, #4ecdc4, #45b7d1);
+    background-size: 400% 400%;
+    animation: playerGlow 2s ease-in-out infinite;
+    z-index: -1;
+    opacity: 0.8;
+}
+
+@keyframes playerPulse {
+    0%, 100% { 
+        transform: scale(1);
+        box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+    }
+    50% { 
+        transform: scale(1.1);
+        box-shadow: 0 0 25px rgba(255, 255, 255, 0.6);
+    }
+}
+
+@keyframes playerGlow {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+/* Discovery Popup Styles */
+.discovery-popup {
+    background: rgba(10, 14, 39, 0.95);
+    color: var(--stellar-white);
+    padding: 20px;
+    border-radius: 12px;
+    border: 2px solid var(--glass-border);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    min-width: 250px;
+    text-align: center;
+}
+
+.discovery-popup h3 {
+    color: var(--cosmic-purple);
+    margin: 0 0 15px 0;
+    font-family: var(--font-mystical);
+    font-size: 1.4rem;
+}
+
+.discovery-popup p {
+    margin: 8px 0;
+    font-size: 0.9rem;
+}
+
+.discovery-popup strong {
+    color: var(--stellar-gold);
+}
+
+.collect-btn {
+    background: linear-gradient(135deg, var(--cosmic-purple), var(--stellar-gold));
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-family: var(--font-mystical);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 15px;
+}
+
+.collect-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+}
+
+/* Leaflet Popup Overrides */
+.leaflet-popup {
+    z-index: 10000 !important;
+}
+
+.leaflet-popup-content-wrapper {
+    background: rgba(10, 14, 39, 0.95) !important;
+    border: 2px solid var(--glass-border) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+    backdrop-filter: blur(10px) !important;
+}
+
+.leaflet-popup-content {
+    margin: 0 !important;
+    padding: 0 !important;
+    color: var(--stellar-white) !important;
+}
+
+.leaflet-popup-tip {
+    background: rgba(10, 14, 39, 0.95) !important;
+    border: 2px solid var(--glass-border) !important;
+}
+
+.leaflet-popup-close-button {
+    color: var(--stellar-white) !important;
+    font-size: 18px !important;
+    font-weight: bold !important;
+    padding: 5px !important;
+}
+
+.leaflet-popup-close-button:hover {
+    color: var(--stellar-gold) !important;
 }
 
 .discovery-marker-container {

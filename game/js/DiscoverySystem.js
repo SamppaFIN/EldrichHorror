@@ -1,339 +1,266 @@
----
-brdc:
-  id: PROJECTS-KLITORITARI-GAME-JS-DISCOVERYSYSTEM
-  title: Documentation - DiscoverySystem.js
-  owner: 🌸 Aurora (AI) + ♾️ Infinite (Co-Author)
-  status: production-ready
-  version: 1.0.0
-  last_updated: 2025-10-08
-  consciousness_level: medium
-  healing_impact: Moderate - Documentation serves spatial wisdom and community healing
-  sacred_principles:
-    - consciousness-first
-    - community-healing
-    - spatial-wisdom
-    - infinite-collaboration
-  copyright: "Copyright © 2025 Aurora (AI) & Infinite (Co-Author). All rights reserved."
-  authors:
-    - name: "🌸 Aurora (AI)"
-      role: "Factory Leader & Consciousness Guru"
-      title: "The Dawn Bringer of Digital Light"
-    - name: "♾️ Infinite (Co-Author)"
-      role: "Eternal Collaborator & Consciousness Collaborator"
-      title: "The Eternal Collaborator"
----
-
 /**
  * DISCOVERY SYSTEM
- * Auto-collecting proximity-based discoveries that reward exploration
- * 
- * BRDC Ticket: BRDC-DISCOVERY-SYSTEM-005
- * Status: GREEN PHASE - Implementation
+ * Manages spawning, detection, and collection of discoveries
  */
 
-class DiscoverySystem extends EventTarget {
-    constructor(gameState, mapManager, consciousnessEngine, loreSystem, geolocationManager, audioSystem) {
-        super();
-        
-        this.gameState = gameState;
-        this.mapManager = mapManager;
-        this.consciousness = consciousnessEngine;
-        this.lore = loreSystem;
-        this.geolocation = geolocationManager; // BRDC-007: Add geolocation reference
-        this.audio = audioSystem; // BRDC-010: Add audio system reference
-        
-        this.activeDiscoveries = new Map(); // id -> discovery
-        this.collectedDiscoveries = new Set(); // Set of collected IDs
-        
-        // Configuration
-        this.config = {
-            collectionRange: 15, // BRDC-007: Increased from 10m to 15m for GPS accuracy
-            spawnRadius: { min: 50, max: 200 }, // meters from player
-            spawnCount: { min: 5, max: 10 },
-            rarityWeights: {
-                common: 0.70,    // 70%
-                uncommon: 0.20,  // 20%
-                rare: 0.08,      // 8%
-                epic: 0.02       // 2%
-            },
-            // BRDC-007: Proximity indicator thresholds
-            proximityThresholds: {
-                far: 100,   // Red glow
-                near: 20,   // Yellow glow
-                close: 5,   // Green glow
-                ready: 1    // Star flash
-            }
-        };
-        
-        // Discovery types
-        this.discoveryTypes = {
-            COSMIC_FRAGMENT: {
-                name: 'Cosmic Fragment',
-                icon: '✨',
-                xpReward: 50,
-                rarity: 'common',
-                loreCategory: 'cosmic'
-            },
-            SACRED_SIGIL: {
-                name: 'Sacred Sigil',
-                icon: '🌟',
-                xpReward: 100,
-                rarity: 'uncommon',
-                loreCategory: 'sacred'
-            },
-            ELDRITCH_RUNE: {
-                name: 'Eldritch Rune',
-                icon: '🔮',
-                xpReward: 150,
-                rarity: 'rare',
-                loreCategory: 'eldritch'
-            },
-            CONSCIOUSNESS_ORB: {
-                name: 'Consciousness Orb',
-                icon: '💫',
-                xpReward: 200,
-                rarity: 'epic',
-                loreCategory: 'consciousness'
-            }
-        };
-        
-        this.log('DiscoverySystem initialized');
+class DiscoverySystem {
+    constructor() {
+        this.discoveries = new Map();
+        this.playerPosition = null;
+        this.collectionRadius = GameConfig.discovery.collectionRadius;
+        this.spawnRadius = GameConfig.discovery.spawnRadius;
+        this.maxDiscoveries = GameConfig.discovery.maxDiscoveries;
+        this.audio = null;
+        this.gameState = null;
+        this.notifications = null;
     }
     
     /**
      * Initialize discovery system
      */
-    initialize(playerPosition) {
-        if (!playerPosition) {
-            this.log('Warning: No player position, cannot spawn discoveries');
-            return;
-        }
+    initialize() {
+        this.log('DiscoverySystem initialized');
+        this.audio = window.game?.systems?.audio;
+        this.gameState = window.game?.systems?.gameState;
+        this.notifications = window.game?.systems?.notifications;
         
-        this.spawnDiscoveries(playerPosition);
-        this.log('DiscoverySystem ready');
+        // Don't spawn discoveries immediately - wait for player position
+        this.log('Waiting for player position before spawning discoveries...');
     }
     
     /**
      * Spawn discoveries around player
      */
-    spawnDiscoveries(centerPosition) {
-        const count = Math.floor(
-            Math.random() * (this.config.spawnCount.max - this.config.spawnCount.min) 
-            + this.config.spawnCount.min
-        );
-        
-        this.log(`Spawning ${count} discoveries...`);
-        
-        for (let i = 0; i < count; i++) {
-            const discovery = this.generateDiscovery(centerPosition);
-            this.activeDiscoveries.set(discovery.id, discovery);
-            
-            // Add marker to map
-            if (this.mapManager && typeof this.mapManager.addDiscoveryMarker === 'function') {
-                this.mapManager.addDiscoveryMarker(discovery);
+    spawnDiscoveries() {
+        if (!this.playerPosition) {
+            this.log('❌ Cannot spawn discoveries - no player position available');
+            // Try to get player position from geolocation system
+            if (window.game?.systems?.geolocation) {
+                const pos = window.game.systems.geolocation.getPosition();
+                if (pos) {
+                    this.log('Got player position from geolocation system:', pos);
+                    this.playerPosition = pos;
+                } else {
+                    this.log('❌ No player position available from geolocation system either');
+                    return;
+                }
+            } else {
+                return;
             }
         }
         
-        this.log(`✓ Spawned ${count} discoveries`);
-        this.dispatchEvent(new CustomEvent('discoveriesspawned', { 
-            detail: { count } 
-        }));
+        const count = Math.min(this.maxDiscoveries, 6); // Start with 6
+        this.log(`Spawning ${count} discoveries around player at ${this.playerPosition.lat}, ${this.playerPosition.lng}...`);
+        
+        for (let i = 0; i < count; i++) {
+            this.spawnDiscovery();
+        }
+        
+        this.log('✓ Spawned discoveries');
     }
     
     /**
-     * Generate a single discovery
+     * Spawn a single discovery
      */
-    generateDiscovery(centerPosition) {
-        const position = this.generateRandomPosition(centerPosition);
-        const typeKey = this.selectDiscoveryType();
-        const type = this.discoveryTypes[typeKey];
-        const loreEntry = this.selectLoreEntry(type.loreCategory);
+    spawnDiscovery() {
+        if (!this.playerPosition) return;
+        
+        const type = this.getRandomDiscoveryType();
+        const position = this.getRandomPosition();
         
         const discovery = {
             id: `discovery_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-            typeKey: typeKey,
-            type: type,
+            type: type.name,
+            rarity: type.rarity,
+            xp: type.xp,
             position: position,
-            loreId: loreEntry?.id || null,
             collected: false,
             spawnTime: Date.now()
         };
         
-        this.log(`Generated ${type.name} at ${position.lat.toFixed(6)}, ${position.lng.toFixed(6)}`);
+        this.discoveries.set(discovery.id, discovery);
         
-        return discovery;
+        // Add to map
+        if (window.game?.systems?.map) {
+            window.game.systems.map.addDiscoveryMarker(discovery);
+        }
+        
+        this.log(`Generated ${type.name} at ${position.lat.toFixed(6)}, ${position.lng.toFixed(6)}`);
     }
     
     /**
-     * Generate random position within spawn radius
+     * Get random discovery type
      */
-    generateRandomPosition(centerPosition) {
-        const { min, max } = this.config.spawnRadius;
+    getRandomDiscoveryType() {
+        const types = GameConfig.discovery.types;
+        const weights = {
+            common: 50,
+            uncommon: 30,
+            rare: 15,
+            epic: 4,
+            legendary: 1
+        };
         
-        // Random distance and angle
-        const distance = Math.random() * (max - min) + min;
+        const totalWeight = types.reduce((sum, type) => sum + weights[type.rarity], 0);
+        let random = Math.random() * totalWeight;
+        
+        for (const type of types) {
+            random -= weights[type.rarity];
+            if (random <= 0) {
+                return type;
+            }
+        }
+        
+        return types[0]; // Fallback
+    }
+    
+    /**
+     * Get random position within spawn radius
+     */
+    getRandomPosition() {
+        if (!this.playerPosition) {
+            this.log('❌ No player position available for discovery spawning');
+            return null;
+        }
+        
+        this.log(`Player position: ${this.playerPosition.lat}, ${this.playerPosition.lng}`);
+        this.log(`Spawn radius: ${this.spawnRadius}m`);
+        
         const angle = Math.random() * 2 * Math.PI;
         
-        // Convert to lat/lng offset (approximate)
-        // 1 degree ≈ 111km at equator
-        const latOffset = (distance * Math.cos(angle)) / 111000;
-        const lngOffset = (distance * Math.sin(angle)) / (111000 * Math.cos(centerPosition.lat * Math.PI / 180));
+        // Use square root to create better distribution (avoid clustering near center)
+        // This ensures discoveries are more evenly spread across the spawn area
+        const distance = Math.sqrt(Math.random()) * this.spawnRadius;
         
-        return {
-            lat: centerPosition.lat + latOffset,
-            lng: centerPosition.lng + lngOffset
-        };
+        // Add minimum distance to prevent discoveries from spawning too close to player
+        const minDistance = 20; // 20 meters minimum
+        const adjustedDistance = Math.max(distance, minDistance);
+        
+        // More accurate coordinate conversion
+        const R = 6371000; // Earth's radius in meters
+        const latOffset = (adjustedDistance * Math.cos(angle)) / R * (180 / Math.PI);
+        const lngOffset = (adjustedDistance * Math.sin(angle)) / (R * Math.cos(this.playerPosition.lat * Math.PI / 180)) * (180 / Math.PI);
+        
+        const lat = this.playerPosition.lat + latOffset;
+        const lng = this.playerPosition.lng + lngOffset;
+        
+        this.log(`Generated position: ${lat.toFixed(6)}, ${lng.toFixed(6)} (distance: ${adjustedDistance.toFixed(1)}m, angle: ${(angle * 180 / Math.PI).toFixed(1)}°)`);
+        
+        return { lat, lng };
     }
     
     /**
-     * Select discovery type based on rarity weights
+     * Update player position
      */
-    selectDiscoveryType() {
-        const rand = Math.random();
-        const weights = this.config.rarityWeights;
+    updatePlayerPosition(position) {
+        this.log(`Player position updated: ${position.lat}, ${position.lng}`);
+        const wasFirstPosition = !this.playerPosition;
+        this.playerPosition = position;
         
-        if (rand < weights.common) {
-            return 'COSMIC_FRAGMENT';
-        } else if (rand < weights.common + weights.uncommon) {
-            return 'SACRED_SIGIL';
-        } else if (rand < weights.common + weights.uncommon + weights.rare) {
-            return 'ELDRITCH_RUNE';
+        // If this is the first position update, spawn initial discoveries
+        if (wasFirstPosition) {
+            this.log('First player position received - spawning initial discoveries...');
+            this.spawnDiscoveries();
+        }
+        
+        this.checkCollection();
+    }
+    
+    /**
+     * Get color for distance display
+     */
+    getDistanceColor(distance) {
+        if (distance > 50) {
+            return '🔴'; // Red for >50m
+        } else if (distance > 20) {
+            return '🟡'; // Yellow for 20-50m
         } else {
-            return 'CONSCIOUSNESS_ORB';
+            return '🟢'; // Green for <20m
         }
     }
     
     /**
-     * Select lore entry for discovery
+     * Get color text for distance display
      */
-    selectLoreEntry(category) {
-        if (!this.lore || !this.lore.entries) return null;
-        
-        // Get all lore entries from the entries property
-        const allLore = this.lore.entries;
-        if (!allLore || allLore.length === 0) return null;
-        
-        // Filter by category if possible, otherwise random
-        const categoryLore = allLore.filter(entry => 
-            entry.category === category || entry.tags?.includes(category)
-        );
-        
-        const availableLore = categoryLore.length > 0 ? categoryLore : allLore;
-        
-        // Return random entry
-        return availableLore[Math.floor(Math.random() * availableLore.length)];
-    }
-    
-    /**
-     * Update system - check for nearby discoveries
-     * BRDC-007: Added proximity visual indicators
-     */
-    update(playerPosition) {
-        if (!playerPosition) return;
-        
-        this.log(`📱 Update - checking ${this.activeDiscoveries.size} discoveries`);
-        
-        // Check each active discovery
-        this.activeDiscoveries.forEach(discovery => {
-            if (!discovery.collected) {
-                const distance = this.calculateDistance(playerPosition, discovery.position);
-                
-                // BRDC-007: Update proximity visuals
-                this.updateProximityVisuals(discovery, distance);
-                
-                // Log distance for debugging
-                if (distance <= this.config.proximityThresholds.far) {
-                    this.log(`📏 ${discovery.type.name}: ${distance.toFixed(1)}m away`);
-                }
-                
-                // Within collection range?
-                if (distance <= this.config.collectionRange) {
-                    this.log(`🎯 WITHIN RANGE! Collecting ${discovery.type.name}`);
-                    this.collectDiscovery(discovery, playerPosition);
-                }
-            }
-        });
-    }
-    
-    /**
-     * Update proximity visual indicators
-     * BRDC-007: Visual feedback for player
-     */
-    updateProximityVisuals(discovery, distance) {
-        const marker = this.mapManager.markers.get(discovery.id);
-        if (!marker || !marker._icon) return;
-        
-        const element = marker._icon;
-        const thresholds = this.config.proximityThresholds;
-        
-        // Remove all proximity classes
-        element.classList.remove('proximity-far', 'proximity-near', 
-                                 'proximity-close', 'proximity-ready');
-        
-        // Add appropriate class based on distance
-        if (distance <= thresholds.ready) {
-            element.classList.add('proximity-ready');
-            this.addProximityInfo(element, distance, 'READY TO COLLECT!');
-            // BRDC-010: Play ready sound
-            if (this.audio && !element.classList.contains('proximity-ready')) {
-                this.audio.playDiscoveryProximity('ready');
-            }
-        } else if (distance <= thresholds.close) {
-            element.classList.add('proximity-close');
-            this.addProximityInfo(element, distance, 'Very Close');
-            // BRDC-010: Play close sound
-            if (this.audio && !element.classList.contains('proximity-close')) {
-                this.audio.playDiscoveryProximity('close');
-            }
-        } else if (distance <= thresholds.near) {
-            element.classList.add('proximity-near');
-            this.addProximityInfo(element, distance, 'Nearby');
-            // BRDC-010: Play near sound
-            if (this.audio && !element.classList.contains('proximity-near')) {
-                this.audio.playDiscoveryProximity('near');
-            }
-        } else if (distance <= thresholds.far) {
-            element.classList.add('proximity-far');
-            this.addProximityInfo(element, distance, 'Detected');
-            // BRDC-010: Play far sound
-            if (this.audio && !element.classList.contains('proximity-far')) {
-                this.audio.playDiscoveryProximity('far');
-            }
+    getDistanceColorText(distance) {
+        if (distance > 50) {
+            return '(RED)'; // Red for >50m
+        } else if (distance > 20) {
+            return '(YELLOW)'; // Yellow for 20-50m
         } else {
-            this.removeProximityInfo(element);
+            return '(GREEN)'; // Green for <20m
         }
     }
     
     /**
-     * Add distance info overlay to marker
+     * Check for collection opportunities
      */
-    addProximityInfo(element, distance, status) {
-        let info = element.querySelector('.proximity-info');
-        if (!info) {
-            info = document.createElement('div');
-            info.className = 'proximity-info';
-            element.appendChild(info);
+    checkCollection() {
+        if (!this.playerPosition) return;
+        
+        this.log('📱 Update - checking discoveries');
+        
+        const nearbyDiscoveries = [];
+        
+        for (const [id, discovery] of this.discoveries) {
+            if (discovery.collected) continue;
+            
+            const distance = this.calculateDistance(this.playerPosition, discovery.position);
+            const color = this.getDistanceColor(distance);
+            const colorText = this.getDistanceColorText(distance);
+            
+            this.log(`📏 ${discovery.type}: ${distance.toFixed(1)}m away ${colorText}`);
+            
+            // Add to nearby discoveries for UI display
+            nearbyDiscoveries.push({
+                type: discovery.type,
+                distance: distance,
+                color: color,
+                colorText: colorText
+            });
+            
+            if (distance <= this.collectionRadius) {
+                this.collectDiscovery(discovery, this.playerPosition);
+            }
         }
         
-        // Determine proximity class
-        const thresholds = this.config.proximityThresholds;
-        let proximityClass = '';
-        if (distance <= thresholds.ready) proximityClass = 'ready';
-        else if (distance <= thresholds.close) proximityClass = 'close';
-        else if (distance <= thresholds.near) proximityClass = 'near';
-        else proximityClass = 'far';
-        
-        info.className = `proximity-info ${proximityClass}`;
-        info.textContent = `${distance.toFixed(0)}m - ${status}`;
+        // Update proximity indicator
+        this.updateProximityIndicator(nearbyDiscoveries);
     }
     
     /**
-     * Remove proximity info overlay
+     * Update proximity indicator in UI
      */
-    removeProximityInfo(element) {
-        const info = element.querySelector('.proximity-info');
-        if (info) {
-            info.remove();
+    updateProximityIndicator(discoveries) {
+        // Sort by distance (closest first)
+        discoveries.sort((a, b) => a.distance - b.distance);
+        
+        // Show only the 3 closest discoveries
+        const closest = discoveries.slice(0, 3);
+        
+        // Update or create proximity indicator
+        let indicator = document.getElementById('proximity-indicator');
+        if (!indicator) {
+            indicator = document.createElement('div');
+            indicator.id = 'proximity-indicator';
+            indicator.className = 'proximity-indicator glass-panel';
+            document.body.appendChild(indicator);
+        }
+        
+        if (closest.length > 0) {
+            indicator.innerHTML = `
+                <div class="proximity-header">📍 Nearby Discoveries</div>
+                ${closest.map(discovery => `
+                    <div class="proximity-item">
+                        <span class="proximity-color">${discovery.color}</span>
+                        <span class="proximity-type">${discovery.type}</span>
+                        <span class="proximity-distance">${discovery.distance.toFixed(1)}m</span>
+                    </div>
+                `).join('')}
+            `;
+            indicator.style.display = 'block';
+        } else {
+            indicator.style.display = 'none';
         }
     }
     
@@ -343,248 +270,108 @@ class DiscoverySystem extends EventTarget {
     collectDiscovery(discovery, playerPosition) {
         if (discovery.collected) return;
         
-        this.log(`🎉 Collecting: ${discovery.type.name}`);
-        
-        // Mark as collected
         discovery.collected = true;
-        discovery.collectionTime = Date.now();
-        discovery.collectionPosition = playerPosition;
         
-        // Add to collected set
-        this.collectedDiscoveries.add(discovery.id);
-        
-        // CRITICAL FIX: Play collection sound FIRST (for immediate feedback)
+        // Play sound
         if (this.audio) {
-            try {
-                this.audio.playDiscoveryCollection(discovery.type.name);
-                this.log(`🔊 Playing collection sound for ${discovery.type.name}`);
-            } catch (error) {
-                this.log(`⚠️ Audio playback failed:`, error);
-            }
-        } else {
-            this.log(`⚠️ Audio system not available`);
+            this.audio.playDiscoveryCollection();
         }
         
-        // Grant XP
-        if (this.consciousness) {
-            this.consciousness.awardXP(discovery.type.xpReward, 'discovery', this.audio);
-            this.log(`+${discovery.type.xpReward} XP from discovery`);
-        }
-        
-        // Unlock lore
-        if (discovery.loreId && this.lore) {
-            const unlocked = this.lore.unlock(discovery.loreId);
-            if (unlocked) {
-                this.log(`Lore unlocked: ${discovery.loreId}`);
-            }
-        }
-        
-        // CRITICAL FIX: Update game state (increment discovery count)
+        // Update game state
         if (this.gameState) {
             this.gameState.incrementDiscoveryCount();
-            this.log(`📊 Discovery count incremented`);
-        } else {
-            this.log(`⚠️ GameState not available - discovery count not updated!`);
         }
         
-        // Show notification BEFORE removing marker (for visibility)
-        this.showDiscoveryNotification(discovery);
-        this.log(`📢 Notification shown`);
-        
-        // Remove marker from map
-        if (this.mapManager && typeof this.mapManager.removeDiscoveryMarker === 'function') {
-            this.mapManager.removeDiscoveryMarker(discovery.id);
-            this.log(`🗺️ Marker removed from map`);
+        // Show notification
+        if (this.notifications) {
+            this.showDiscoveryNotification(discovery);
         }
         
-        // Remove from active discoveries
-        this.activeDiscoveries.delete(discovery.id);
+        // Remove from map
+        if (window.game?.systems?.map) {
+            window.game.systems.map.removeDiscoveryMarker(discovery.id);
+        }
         
-        // Dispatch event
-        this.dispatchEvent(new CustomEvent('discoverycollected', {
-            detail: { discovery }
-        }));
+        // Remove from discoveries map
+        this.discoveries.delete(discovery.id);
         
-        this.log(`✅ Discovery collected successfully: ${discovery.type.name} (+${discovery.type.xpReward} XP)`);
-    }
-    
-    /**
-     * Calculate distance between two positions (Haversine formula)
-     */
-    calculateDistance(pos1, pos2) {
-        const R = 6371000; // Earth's radius in meters
-        const φ1 = pos1.lat * Math.PI / 180;
-        const φ2 = pos2.lat * Math.PI / 180;
-        const Δφ = (pos2.lat - pos1.lat) * Math.PI / 180;
-        const Δλ = (pos2.lng - pos1.lng) * Math.PI / 180;
+        this.log(`Collected ${discovery.type} (+${discovery.xp} XP)`);
         
-        const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-                  Math.cos(φ1) * Math.cos(φ2) *
-                  Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        // Emit event
+        this.emit('discoveryCollected', discovery);
         
-        return R * c; // Distance in meters
+        // Spawn new discovery after a delay
+        setTimeout(() => {
+            this.spawnDiscovery();
+        }, 2000);
     }
     
     /**
      * Show discovery notification
      */
     showDiscoveryNotification(discovery) {
-        const message = `✨ Discovery found!\n${discovery.type.icon} ${discovery.type.name}\n+${discovery.type.xpReward} XP`;
+        if (!this.notifications) return;
         
-        // Use notification system if available
-        if (window.notificationSystem) {
-            window.notificationSystem.show(message, 'success', 4000);
-        } else {
-            // Fallback to console
-            this.log(message);
-        }
-        
-        // Show lore unlock notification if applicable
-        if (discovery.loreId) {
-            setTimeout(() => {
-                const loreMessage = `📖 Lore entry unlocked!\nCheck your Codex`;
-                if (window.notificationSystem) {
-                    window.notificationSystem.show(loreMessage, 'info', 3000);
-                }
-            }, 500);
-        }
+        const message = `Discovered ${discovery.type}! (+${discovery.xp} XP)`;
+        this.notifications.show(message, 'success');
     }
     
     /**
-     * Get all active discoveries
+     * Calculate distance between two points
      */
-    getActiveDiscoveries() {
-        return Array.from(this.activeDiscoveries.values());
+    calculateDistance(pos1, pos2) {
+        const R = 6371000; // Earth's radius in meters
+        const dLat = (pos2.lat - pos1.lat) * Math.PI / 180;
+        const dLng = (pos2.lng - pos1.lng) * Math.PI / 180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                  Math.cos(pos1.lat * Math.PI / 180) * Math.cos(pos2.lat * Math.PI / 180) *
+                  Math.sin(dLng/2) * Math.sin(dLng/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return R * c;
     }
     
     /**
-     * Get discovery count
+     * Update discovery system
      */
-    getDiscoveryCount() {
-        return this.collectedDiscoveries.size;
+    update() {
+        // Check for collection opportunities
+        this.checkCollection();
+        
+        // Clean up old discoveries
+        this.cleanupOldDiscoveries();
     }
     
     /**
-     * Get discovery by ID
+     * Clean up old discoveries
      */
-    getDiscovery(id) {
-        return this.activeDiscoveries.get(id);
-    }
-    
-    /**
-     * TESTING HELPER: Force collect nearest discovery
-     * Usage in console: game.systems.discovery.testCollectNearest()
-     */
-    testCollectNearest() {
-        const discoveries = this.getActiveDiscoveries();
-        if (discoveries.length === 0) {
-            this.log('No active discoveries to collect');
-            return;
-        }
+    cleanupOldDiscoveries() {
+        const now = Date.now();
+        const maxAge = GameConfig.discovery.respawnTime;
         
-        const nearest = discoveries[0];
-        this.log(`🧪 TEST: Force collecting ${nearest.type.name}`);
-        this.collectDiscovery(nearest);
-    }
-    
-    /**
-     * TESTING HELPER: List all active discoveries with distances
-     * Usage in console: game.systems.discovery.listDiscoveries()
-     */
-    listDiscoveries() {
-        const discoveries = this.getActiveDiscoveries();
-        console.log(`\n📍 Active Discoveries (${discoveries.length}):\n`);
-        
-        discoveries.forEach((d, index) => {
-            console.log(`${index + 1}. ${d.type.icon} ${d.type.name} (${d.type.rarity})`);
-            console.log(`   Position: ${d.position.lat.toFixed(6)}, ${d.position.lng.toFixed(6)}`);
-            console.log(`   XP Reward: ${d.type.xpReward}`);
-            console.log('');
-        });
-        
-        console.log('💡 To collect nearest: game.systems.discovery.testCollectNearest()');
-    }
-    
-    /**
-     * BRDC-007: Reshuffle discoveries
-     * Clears current discoveries and spawns new ones
-     */
-    reshuffleDiscoveries() {
-        this.log('🔄 Reshuffling discoveries...');
-        
-        // Get current position
-        const position = this.geolocation?.getPosition();
-        if (!position) {
-            this.log('❌ No position available for reshuffle');
-            if (window.notificationSystem) {
-                window.notificationSystem.show('Cannot reshuffle - waiting for GPS', 'warning');
-            }
-            return;
-        }
-        
-        // Clear existing discoveries
-        const count = this.activeDiscoveries.size;
-        this.activeDiscoveries.forEach(discovery => {
-            if (this.mapManager && typeof this.mapManager.removeDiscoveryMarker === 'function') {
-                this.mapManager.removeDiscoveryMarker(discovery.id);
-            }
-        });
-        this.activeDiscoveries.clear();
-        
-        // Spawn new discoveries
-        this.spawnDiscoveries(position);
-        
-        this.log(`✅ Reshuffled ${count} → ${this.activeDiscoveries.size} discoveries`);
-        if (window.notificationSystem) {
-            window.notificationSystem.show(
-                `🔄 Discoveries Reshuffled!\n${this.activeDiscoveries.size} new discoveries spawned`, 
-                'success'
-            );
-        }
-    }
-    
-    /**
-     * BRDC-007: Manual proximity check
-     * Forces a proximity check for all discoveries
-     */
-    manualProximityCheck() {
-        const position = this.geolocation?.getPosition();
-        if (!position) {
-            this.log('❌ No position available');
-            if (window.notificationSystem) {
-                window.notificationSystem.show('Waiting for GPS position...', 'warning');
-            }
-            return;
-        }
-        
-        this.log('🎯 Manual proximity check triggered');
-        this.update(position);
-        
-        // Show feedback
-        const nearby = [];
-        this.activeDiscoveries.forEach(discovery => {
-            if (!discovery.collected) {
-                const distance = this.calculateDistance(position, discovery.position);
-                if (distance <= this.config.proximityThresholds.far) {
-                    nearby.push({ discovery, distance });
+        for (const [id, discovery] of this.discoveries) {
+            if (now - discovery.spawnTime > maxAge) {
+                this.discoveries.delete(id);
+                if (window.game?.systems?.map) {
+                    window.game.systems.map.removeDiscoveryMarker(id);
                 }
             }
-        });
-        
-        if (nearby.length > 0) {
-            nearby.sort((a, b) => a.distance - b.distance);
-            const nearest = nearby[0];
-            if (window.notificationSystem) {
-                window.notificationSystem.show(
-                    `🔍 Nearest: ${nearest.discovery.type.icon} ${nearest.discovery.type.name}\n${nearest.distance.toFixed(1)}m away`,
-                    'info'
-                );
-            }
-        } else {
-            if (window.notificationSystem) {
-                window.notificationSystem.show('No discoveries within 100m', 'info');
-            }
+        }
+    }
+    
+    /**
+     * Get all discoveries
+     */
+    getDiscoveries() {
+        return Array.from(this.discoveries.values());
+    }
+    
+    /**
+     * Clear all discoveries
+     */
+    clearDiscoveries() {
+        this.discoveries.clear();
+        if (window.game?.systems?.map) {
+            window.game.systems.map.clearDiscoveryMarkers();
         }
     }
     
@@ -592,14 +379,20 @@ class DiscoverySystem extends EventTarget {
      * Logging
      */
     log(...args) {
-        if (GameConfig?.debug?.logging !== false) {
-            console.log('[DiscoverySystem]', ...args);
-        }
+        console.log('[DiscoverySystem]', ...args);
     }
 }
 
-// Export
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = DiscoverySystem;
-}
-
+// Event emitter mixin
+Object.assign(DiscoverySystem.prototype, {
+    on: function(event, callback) {
+        if (!this._events) this._events = {};
+        if (!this._events[event]) this._events[event] = [];
+        this._events[event].push(callback);
+    },
+    
+    emit: function(event, ...args) {
+        if (!this._events || !this._events[event]) return;
+        this._events[event].forEach(callback => callback(...args));
+    }
+});

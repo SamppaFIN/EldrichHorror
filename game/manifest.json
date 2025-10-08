@@ -1,0 +1,23 @@
+{
+  "name": "Eldritch Sanctuary - Consciousness Walker",
+  "short_name": "Eldritch Sanctuary",
+  "description": "A consciousness-aware mobile exploration game where you discover cosmic fragments and encounter mystical entities.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0F0B1A",
+  "theme_color": "#8B5CF6",
+  "orientation": "portrait",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["games", "entertainment", "lifestyle"],
+  "lang": "en",
+  "dir": "ltr"
+}
+
